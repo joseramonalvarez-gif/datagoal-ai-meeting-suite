@@ -35,6 +35,7 @@ export default function TaskDetail({ task, open, onClose, onUpdate }) {
     assignee_name: task?.assignee_name || "",
     due_date: task?.due_date || "",
   });
+  const [comment, setComment] = useState("");
 
   React.useEffect(() => {
     if (task) {
