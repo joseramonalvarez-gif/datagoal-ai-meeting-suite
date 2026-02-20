@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 import {
   LayoutDashboard, Calendar, Clock, FolderTree, Shield, Users,
   FileText, CheckSquare, MessageSquare, FileCheck, Flag,
-  Search, Bell, ChevronDown, Menu, X, LogOut, Settings
+  Search, Bell, ChevronDown, Menu, X, LogOut, Settings, FlaskConical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
