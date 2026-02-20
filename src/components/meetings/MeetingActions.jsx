@@ -280,6 +280,7 @@ ${transcriptText}`,
       }
     });
 
+    const me = await base44.auth.me();
     const createdTasks = [];
     for (const task of (result.tasks || [])) {
       const created = await base44.entities.Task.create({
@@ -302,6 +303,10 @@ ${transcriptText}`,
         })),
       });
       createdTasks.push(created);
+      // Notify assignee if set
+      if (task.assignee_email) {
+        await notifyTaskAssigned({ task: { ...created, ...task, client_id: meeting.client_id }, assignedBy: me.email });
+      }
     }
 
     toast.success(`${createdTasks.length} tareas extraídas correctamente`);
