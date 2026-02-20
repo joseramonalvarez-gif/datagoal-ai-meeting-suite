@@ -26,6 +26,7 @@ export default function Tasks({ selectedClient }) {
   const [newTask, setNewTask] = useState({ title: "", description: "", project_id: "", priority: "medium", assignee_name: "", assignee_email: "", due_date: "" });
 
   useEffect(() => { loadData(); }, [selectedClient]);
+  useEffect(() => { checkTaskDueDates(); }, []);
 
   const loadData = async () => {
     setLoading(true);
