@@ -179,6 +179,26 @@ export default function TaskDetail({ task, open, onClose, onUpdate }) {
             </div>
           )}
         </div>
+          {/* Comment / mention */}
+          <div>
+            <h4 className="text-sm font-semibold text-[#1B2731] mb-2 flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-[#33A19A]" /> Comentario / Mención
+            </h4>
+            <p className="text-xs text-[#3E4C59] mb-2">Usa @email para mencionar a alguien (ej. @usuario@empresa.com)</p>
+            <div className="flex gap-2">
+              <Textarea
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+                placeholder="Escribe un comentario... menciona con @email"
+                rows={2}
+                className="flex-1 text-sm"
+              />
+              <Button size="sm" onClick={handleAddComment} disabled={!comment.trim()} className="self-end bg-[#33A19A] hover:bg-[#2A857F] text-white gap-1">
+                <Send className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
           <Button onClick={handleSave} className="bg-[#33A19A] hover:bg-[#2A857F] text-white">Guardar</Button>
