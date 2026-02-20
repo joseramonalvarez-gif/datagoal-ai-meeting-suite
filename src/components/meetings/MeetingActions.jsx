@@ -64,7 +64,16 @@ export default function MeetingActions({ meeting, onUpdate }) {
       setProcessing("audio");
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       await base44.entities.Meeting.update(meeting.id, { audio_url: file_url, source_type: "audio_upload", status: "recorded" });
-      toast.success("Audio subido correctamente");
+      toast.success("Audio subido. Transcribiendo automáticamente...");
+
+      // Auto-transcribe if no transcript exists yet
+      const existing = await base44.entities.Transcript.filter({ meeting_id: meeting.id });
+      if (existing.length === 0) {
+        setProcessing("transcribe");
+        await doTranscribe(file_url, meeting.id, meeting.client_id, meeting.project_id);
+        toast.success("Transcripción completada automáticamente");
+      }
+
       setProcessing(null);
       onUpdate();
     });
