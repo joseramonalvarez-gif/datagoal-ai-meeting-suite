@@ -53,6 +53,9 @@ import Projects from './pages/Projects';
 import Meetings from './pages/Meetings';
 import Tasks from './pages/Tasks';
 import Documents from './pages/Documents';
+import Chat from './pages/Chat';
+import TimeTracking from './pages/TimeTracking';
+import Milestones from './pages/Milestones';
 import __Layout from './Layout.jsx';
 
 
@@ -63,6 +66,9 @@ export const PAGES = {
     "Meetings": Meetings,
     "Tasks": Tasks,
     "Documents": Documents,
+    "Chat": Chat,
+    "TimeTracking": TimeTracking,
+    "Milestones": Milestones,
 }
 
 export const pagesConfig = {
