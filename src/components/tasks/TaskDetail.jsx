@@ -52,9 +52,54 @@ export default function TaskDetail({ task, open, onClose, onUpdate }) {
   }, [task]);
 
   const handleSave = async () => {
+    const me = await base44.auth.me();
+    const prevAssignee = task.assignee_email;
     await base44.entities.Task.update(task.id, form);
+    // Notify if assignee changed
+    if (form.assignee_email && form.assignee_email !== prevAssignee) {
+      await notifyTaskAssigned({
+        task: { ...task, ...form },
+        assignedBy: me.email,
+      });
+    }
     onUpdate();
     onClose();
+  };
+
+  const handleAddComment = async () => {
+    if (!comment.trim()) return;
+    const me = await base44.auth.me();
+    // Detect @mentions: emails written as @email or plain email patterns
+    const mentionRegex = /@([\w.+-]+@[\w-]+\.[\w.]+)/g;
+    const mentions = [...comment.matchAll(mentionRegex)].map(m => m[1]);
+    // Also check watchers list for mentions by name
+    const allWatchers = task.watchers || [];
+
+    const updatedChecklist = task.checklist || [];
+    // Store comment as a checklist item (quick approach without dedicated comment field)
+    // We use a separate field comment in evidence_segments style — actually we just append to description for simplicity
+    // Better: store as audit log + notification
+    for (const email of mentions) {
+      await notifyTaskMention({
+        task: { ...task },
+        mentionedEmail: email,
+        commentText: comment,
+        mentionedBy: me.email,
+      });
+    }
+
+    await base44.entities.AuditLog.create({
+      user_email: me.email,
+      client_id: task.client_id || "",
+      project_id: task.project_id || "",
+      action: "task_comment",
+      entity_type: "Task",
+      entity_id: task.id,
+      details: `Comentario en "${task.title}": ${comment}`,
+      timestamp: new Date().toISOString(),
+    });
+
+    setComment("");
   };
 
   if (!task) return null;
