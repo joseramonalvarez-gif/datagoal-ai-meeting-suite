@@ -7,6 +7,53 @@ import { toast } from "sonner";
 export default function MeetingActions({ meeting, onUpdate }) {
   const [processing, setProcessing] = useState(null);
 
+  const isTranscribed = ["transcribed", "report_generated", "approved", "closed"].includes(meeting?.status);
+
+  // Shared transcribe logic (used both standalone and after audio upload)
+  const doTranscribe = async (audioUrl, meetingId, clientId, projectId) => {
+    const result = await base44.integrations.Core.InvokeLLM({
+      prompt: `Transcribe this audio file literally. Identify different speakers and provide timestamps. 
+      Format the output as segments with start_time, end_time, speaker_id, speaker_label, and text_literal.
+      Be extremely literal - do not summarize or clean up the text.`,
+      file_urls: [audioUrl],
+      response_json_schema: {
+        type: "object",
+        properties: {
+          segments: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                start_time: { type: "string" },
+                end_time: { type: "string" },
+                speaker_id: { type: "string" },
+                speaker_label: { type: "string" },
+                text_literal: { type: "string" }
+              }
+            }
+          },
+          full_text: { type: "string" }
+        }
+      }
+    });
+    const existingTranscripts = await base44.entities.Transcript.filter({ meeting_id: meetingId });
+    const nextVersion = existingTranscripts.length + 1;
+    await base44.entities.Transcript.create({
+      meeting_id: meetingId,
+      client_id: clientId,
+      project_id: projectId,
+      version: nextVersion,
+      status: "completed",
+      has_timeline: true,
+      has_diarization: true,
+      segments: result.segments || [],
+      full_text: result.full_text || "",
+      source: "audio_transcription",
+      ai_metadata: { model: "gemini", generated_at: new Date().toISOString() }
+    });
+    await base44.entities.Meeting.update(meetingId, { status: "transcribed" });
+  };
+
   const handleUploadAudio = () => {
     const input = document.createElement("input");
     input.type = "file";
