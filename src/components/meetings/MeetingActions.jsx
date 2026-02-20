@@ -77,7 +77,7 @@ export default function MeetingActions({ meeting, onUpdate }) {
       toast.success("Transcripción subida correctamente");
       setProcessing(null);
       onUpdate();
-    };
+    });
     input.click();
   };
 
