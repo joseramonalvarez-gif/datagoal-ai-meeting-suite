@@ -46,11 +46,15 @@ export default function Tasks({ selectedClient }) {
   };
 
   const handleCreateTask = async () => {
-    await base44.entities.Task.create({
+    const me = await base44.auth.me();
+    const created = await base44.entities.Task.create({
       ...newTask,
       client_id: selectedClient?.id || "",
       status: "todo",
     });
+    if (newTask.assignee_email) {
+      await notifyTaskAssigned({ task: { ...created, ...newTask, client_id: selectedClient?.id || "" }, assignedBy: me.email });
+    }
     setShowNewTask(false);
     setNewTask({ title: "", description: "", project_id: "", priority: "medium", assignee_name: "", assignee_email: "", due_date: "" });
     loadData();
