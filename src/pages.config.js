@@ -47,32 +47,32 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
-import Dashboard from './pages/Dashboard';
-import Clients from './pages/Clients';
-import Projects from './pages/Projects';
-import Meetings from './pages/Meetings';
-import Tasks from './pages/Tasks';
-import Documents from './pages/Documents';
+import AuditLog from './pages/AuditLog';
 import Chat from './pages/Chat';
-import TimeTracking from './pages/TimeTracking';
+import Clients from './pages/Clients';
+import Dashboard from './pages/Dashboard';
+import Documents from './pages/Documents';
+import Meetings from './pages/Meetings';
 import Milestones from './pages/Milestones';
 import Notifications from './pages/Notifications';
-import AuditLog from './pages/AuditLog';
+import Projects from './pages/Projects';
+import Tasks from './pages/Tasks';
+import TimeTracking from './pages/TimeTracking';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Dashboard": Dashboard,
-    "Clients": Clients,
-    "Projects": Projects,
-    "Meetings": Meetings,
-    "Tasks": Tasks,
-    "Documents": Documents,
+    "AuditLog": AuditLog,
     "Chat": Chat,
-    "TimeTracking": TimeTracking,
+    "Clients": Clients,
+    "Dashboard": Dashboard,
+    "Documents": Documents,
+    "Meetings": Meetings,
     "Milestones": Milestones,
     "Notifications": Notifications,
-    "AuditLog": AuditLog,
+    "Projects": Projects,
+    "Tasks": Tasks,
+    "TimeTracking": TimeTracking,
 }
 
 export const pagesConfig = {
