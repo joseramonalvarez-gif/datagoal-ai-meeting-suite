@@ -58,6 +58,7 @@ import Notifications from './pages/Notifications';
 import Projects from './pages/Projects';
 import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
+import QAControlCenter from './pages/QAControlCenter';
 import __Layout from './Layout.jsx';
 
 
@@ -73,6 +74,7 @@ export const PAGES = {
     "Projects": Projects,
     "Tasks": Tasks,
     "TimeTracking": TimeTracking,
+    "QAControlCenter": QAControlCenter,
 }
 
 export const pagesConfig = {
