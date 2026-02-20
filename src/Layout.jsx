@@ -27,6 +27,7 @@ const NAV_ITEMS = [
   { name: "Proyectos", icon: FolderTree, page: "Projects" },
   { name: "Notificaciones", icon: Bell, page: "Notifications" },
   { name: "Auditoría", icon: Shield, page: "AuditLog" },
+  { name: "QA Center", icon: FlaskConical, page: "QAControlCenter" },
 ];
 
 export default function Layout({ children, currentPageName }) {
