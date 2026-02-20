@@ -24,11 +24,11 @@ export default function MeetingActions({ meeting, onUpdate }) {
     input.click();
   };
 
-  const handleUploadTranscript = async () => {
+  const handleUploadTranscript = () => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".txt,.vtt,.srt,.doc,.docx,.pdf";
-    input.onchange = async (e) => {
+    input.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       setProcessing("transcript_upload");
