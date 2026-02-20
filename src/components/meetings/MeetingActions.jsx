@@ -27,7 +27,7 @@ export default function MeetingActions({ meeting, onUpdate }) {
   const handleUploadTranscript = async () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".txt,.docx,.vtt,.srt";
+    input.accept = ".txt,.vtt,.srt";
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
