@@ -56,6 +56,7 @@ import Documents from './pages/Documents';
 import Chat from './pages/Chat';
 import TimeTracking from './pages/TimeTracking';
 import Milestones from './pages/Milestones';
+import Notifications from './pages/Notifications';
 import __Layout from './Layout.jsx';
 
 
@@ -69,6 +70,7 @@ export const PAGES = {
     "Chat": Chat,
     "TimeTracking": TimeTracking,
     "Milestones": Milestones,
+    "Notifications": Notifications,
 }
 
 export const pagesConfig = {

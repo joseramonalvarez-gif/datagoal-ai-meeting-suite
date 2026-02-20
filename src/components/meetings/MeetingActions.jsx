@@ -306,33 +306,62 @@ ${transcriptText}`,
       return;
     }
 
-    const recipients = meeting.participants?.map(p => p.email).filter(Boolean) || [];
     const me = await base44.auth.me();
 
-    for (const email of recipients) {
+    // Collect all recipients: participants + project leads + client management contacts
+    const participantEmails = meeting.participants?.map(p => p.email).filter(Boolean) || [];
+
+    let projectLeadEmails = [];
+    let managementEmails = [];
+    if (meeting.project_id) {
+      const projects = await base44.entities.Project.filter({ id: meeting.project_id });
+      if (projects[0]?.leads) projectLeadEmails = projects[0].leads.filter(Boolean);
+    }
+    if (meeting.client_id) {
+      const clients = await base44.entities.Client.filter({ id: meeting.client_id });
+      if (clients[0]?.management_contacts) managementEmails = clients[0].management_contacts.filter(Boolean);
+    }
+
+    const allRecipients = [...new Set([...participantEmails, ...projectLeadEmails, ...managementEmails])];
+
+    const emailBody = `<h2>Informe de Reunión: ${meeting.title}</h2>
+<p>Fecha: ${meeting.date ? new Date(meeting.date).toLocaleDateString('es-ES', { timeZone: 'Europe/Madrid' }) : '—'}</p>
+<p>Participantes: ${meeting.participants?.map(p => p.name).join(', ') || '—'}</p>
+<hr>
+${report.content_markdown?.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/^## (.*)/gm, '<h3>$1</h3>').replace(/^# (.*)/gm, '<h2>$1</h2>') || ""}
+<hr>
+<p style="color:#3E4C59;font-size:12px"><em>Enviado desde DATA GOAL — datagoal.es</em></p>`;
+
+    for (const email of allRecipients) {
       await base44.integrations.Core.SendEmail({
         to: email,
-        subject: `Informe de Reunión: ${meeting.title}`,
-        body: `<h2>Informe de Reunión: ${meeting.title}</h2>
-<p>Se ha generado el informe de la reunión celebrada el ${new Date(meeting.date).toLocaleDateString('es-ES')}.</p>
-<hr>
-${report.content_markdown?.replace(/\n/g, '<br>') || ""}
-<hr>
-<p><em>Enviado desde DATA GOAL</em></p>`,
+        subject: `[DATA GOAL] Informe de Reunión: ${meeting.title}`,
+        body: emailBody,
       });
     }
 
-    // Audit
+    // Audit log
     await base44.entities.Report.update(report.id, {
       email_send_history: [...(report.email_send_history || []), {
         sent_by: me.email,
         sent_at: new Date().toISOString(),
-        recipients,
+        recipients: allRecipients,
         report_version: report.version,
       }]
     });
 
-    toast.success(`Informe enviado a ${recipients.length} participante(s)`);
+    await base44.entities.AuditLog.create({
+      client_id: meeting.client_id,
+      project_id: meeting.project_id,
+      user_email: me.email,
+      action: "email_sent",
+      entity_type: "Report",
+      entity_id: report.id,
+      details: `Informe v${report.version} enviado a: ${allRecipients.join(', ')}`,
+      timestamp: new Date().toISOString(),
+    });
+
+    toast.success(`Informe enviado a ${allRecipients.length} destinatario(s)`);
     setProcessing(null);
     onUpdate();
   };
