@@ -7,11 +7,11 @@ import { toast } from "sonner";
 export default function MeetingActions({ meeting, onUpdate }) {
   const [processing, setProcessing] = useState(null);
 
-  const handleUploadAudio = async () => {
+  const handleUploadAudio = () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".mp3,.wav,.m4a,.ogg,.webm";
-    input.onchange = async (e) => {
+    input.accept = ".mp3,.wav,.m4a,.ogg,.webm,.mp4";
+    input.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       setProcessing("audio");
@@ -20,14 +20,14 @@ export default function MeetingActions({ meeting, onUpdate }) {
       toast.success("Audio subido correctamente");
       setProcessing(null);
       onUpdate();
-    };
+    });
     input.click();
   };
 
   const handleUploadTranscript = async () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".txt,.vtt,.srt";
+    input.accept = ".txt,.vtt,.srt,.doc,.docx,.pdf";
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
