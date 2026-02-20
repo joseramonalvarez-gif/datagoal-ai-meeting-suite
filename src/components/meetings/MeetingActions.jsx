@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Upload, FileText, Mic, Brain, ListChecks, Mail, CheckCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { notifyTaskAssigned } from "../tasks/taskNotifications";
 
 export default function MeetingActions({ meeting, onUpdate }) {
   const [processing, setProcessing] = useState(null);
