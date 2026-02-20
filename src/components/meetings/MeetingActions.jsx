@@ -143,51 +143,7 @@ export default function MeetingActions({ meeting, onUpdate }) {
       return;
     }
     setProcessing("transcribe");
-    
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Transcribe this audio file literally. Identify different speakers and provide timestamps. 
-      Format the output as segments with start_time, end_time, speaker_id, speaker_label, and text_literal.
-      Be extremely literal - do not summarize or clean up the text.`,
-      file_urls: [meeting.audio_url],
-      response_json_schema: {
-        type: "object",
-        properties: {
-          segments: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                start_time: { type: "string" },
-                end_time: { type: "string" },
-                speaker_id: { type: "string" },
-                speaker_label: { type: "string" },
-                text_literal: { type: "string" }
-              }
-            }
-          },
-          full_text: { type: "string" }
-        }
-      }
-    });
-
-    const existingTranscripts = await base44.entities.Transcript.filter({ meeting_id: meeting.id });
-    const nextVersion = existingTranscripts.length + 1;
-
-    await base44.entities.Transcript.create({
-      meeting_id: meeting.id,
-      client_id: meeting.client_id,
-      project_id: meeting.project_id,
-      version: nextVersion,
-      status: "completed",
-      has_timeline: true,
-      has_diarization: true,
-      segments: result.segments || [],
-      full_text: result.full_text || "",
-      source: "audio_transcription",
-      ai_metadata: { model: "gemini", generated_at: new Date().toISOString() }
-    });
-
-    await base44.entities.Meeting.update(meeting.id, { status: "transcribed" });
+    await doTranscribe(meeting.audio_url, meeting.id, meeting.client_id, meeting.project_id);
     toast.success("Transcripción completada");
     setProcessing(null);
     onUpdate();
