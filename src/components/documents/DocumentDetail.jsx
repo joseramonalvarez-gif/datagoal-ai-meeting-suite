@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ExternalLink, Clock, MessageSquare, CheckCircle, XCircle, Send, History, Upload } from "lucide-react";
+import { ExternalLink, Clock, MessageSquare, CheckCircle, XCircle, Upload, History, User } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
@@ -19,172 +18,257 @@ const STATUS_CONFIG = {
   archived: { label: "Archivado", color: "bg-gray-100 text-gray-500" },
 };
 
-export default function DocumentDetail({ doc, open, onClose, onUpdated, user, allVersions }) {
+export default function DocumentDetail({ doc, user, onClose, onUpdated }) {
+  const [versions, setVersions] = useState([]);
+  const [selectedVersion, setSelectedVersion] = useState(null);
   const [comment, setComment] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [status, setStatus] = useState(doc?.status || "draft");
+  const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    if (doc) setStatus(doc.status || "draft");
+    if (doc) loadVersions();
   }, [doc]);
 
-  if (!doc) return null;
+  const loadVersions = async () => {
+    // The "parent" is either doc itself (if it's the original) or doc.parent_document_id
+    const rootId = doc.parent_document_id || doc.id;
+    const allVersions = await base44.entities.Document.filter(
+      { $or: [{ id: rootId }, { parent_document_id: rootId }] },
+      "-version", 20
+    ).catch(() => [doc]);
+    const sorted = allVersions.length > 0 ? allVersions : [doc];
+    setVersions(sorted);
+    setSelectedVersion(sorted[0]);
+  };
 
-  const comments = doc.comments || [];
-  const statusCfg = STATUS_CONFIG[status] || STATUS_CONFIG.draft;
-
-  const handleAddComment = async (type = "comment") => {
+  const handleComment = async () => {
     if (!comment.trim()) return;
-    setSaving(true);
+    setSubmitting(true);
     const newComment = {
-      author_email: user?.email || "",
-      author_name: user?.full_name || user?.email || "Usuario",
-      text: comment.trim(),
+      author_email: user?.email,
+      author_name: user?.full_name || user?.email,
+      text: comment,
       timestamp: new Date().toISOString(),
-      type,
+      type: "comment",
     };
-    const newStatus = type === "approval" ? "approved" : type === "rejection" ? "rejected" : doc.status;
-    await base44.entities.Document.update(doc.id, {
-      comments: [...comments, newComment],
-      status: newStatus,
-    });
+    const updated = [...(selectedVersion.comments || []), newComment];
+    await base44.entities.Document.update(selectedVersion.id, { comments: updated });
     setComment("");
-    setSaving(false);
-    toast.success(type === "approval" ? "Documento aprobado" : type === "rejection" ? "Documento rechazado" : "Comentario añadido");
+    setSubmitting(false);
+    toast.success("Comentario añadido");
     onUpdated();
+    loadVersions();
   };
 
-  const handleStatusChange = async (newStatus) => {
-    setStatus(newStatus);
-    await base44.entities.Document.update(doc.id, { status: newStatus });
-    toast.success("Estado actualizado");
+  const handleApproval = async (decision) => {
+    setSubmitting(true);
+    const newComment = {
+      author_email: user?.email,
+      author_name: user?.full_name || user?.email,
+      text: comment || (decision === "approval" ? "Aprobado" : "Rechazado"),
+      timestamp: new Date().toISOString(),
+      type: decision,
+    };
+    const updated = [...(selectedVersion.comments || []), newComment];
+    const newStatus = decision === "approval" ? "approved" : "rejected";
+    await base44.entities.Document.update(selectedVersion.id, { comments: updated, status: newStatus });
+    setComment("");
+    setSubmitting(false);
+    toast.success(decision === "approval" ? "Documento aprobado" : "Documento rechazado");
     onUpdated();
+    loadVersions();
   };
+
+  const handleRequestApproval = async () => {
+    await base44.entities.Document.update(selectedVersion.id, { status: "pending_approval" });
+    toast.success("Aprobación solicitada");
+    onUpdated();
+    loadVersions();
+  };
+
+  const handleNewVersion = async () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".pdf,.docx,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.ppt,.pptx";
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      setUploading(true);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const rootId = doc.parent_document_id || doc.id;
+      const maxVersion = Math.max(...versions.map(v => v.version || 1));
+      // Mark old versions as not latest
+      await Promise.all(versions.map(v => base44.entities.Document.update(v.id, { is_latest: false })));
+      await base44.entities.Document.create({
+        ...selectedVersion,
+        id: undefined,
+        created_date: undefined,
+        updated_date: undefined,
+        parent_document_id: rootId,
+        version: maxVersion + 1,
+        is_latest: true,
+        status: "draft",
+        file_url,
+        file_type: file.name.split('.').pop(),
+        comments: [],
+      });
+      setUploading(false);
+      toast.success(`Versión ${maxVersion + 1} subida correctamente`);
+      onUpdated();
+      loadVersions();
+    };
+    input.click();
+  };
+
+  if (!doc) return null;
+  const sv = selectedVersion || doc;
+  const statusCfg = STATUS_CONFIG[sv.status] || STATUS_CONFIG.draft;
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={!!doc} onOpenChange={onClose}>
+      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="font-heading text-lg flex items-center gap-3">
+          <DialogTitle className="font-heading flex items-center gap-3">
             <span className="truncate">{doc.name}</span>
             <Badge className={`${statusCfg.color} border-0 text-xs flex-shrink-0`}>{statusCfg.label}</Badge>
-            <Badge className="bg-[#33A19A]/10 text-[#33A19A] border-0 text-xs flex-shrink-0">v{doc.version || 1}</Badge>
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="details">
-          <TabsList className="bg-white border border-[#B7CAC9]/20">
-            <TabsTrigger value="details">Detalles</TabsTrigger>
-            <TabsTrigger value="comments">Comentarios ({comments.length})</TabsTrigger>
-            <TabsTrigger value="versions">Versiones ({allVersions?.length || 1})</TabsTrigger>
+        <Tabs defaultValue="detail" className="flex-1 flex flex-col overflow-hidden">
+          <TabsList className="flex-shrink-0">
+            <TabsTrigger value="detail">Detalle</TabsTrigger>
+            <TabsTrigger value="versions">
+              <History className="w-3 h-3 mr-1" /> Versiones ({versions.length})
+            </TabsTrigger>
+            <TabsTrigger value="comments">
+              <MessageSquare className="w-3 h-3 mr-1" /> Comentarios ({sv.comments?.length || 0})
+            </TabsTrigger>
           </TabsList>
 
-          {/* Details Tab */}
-          <TabsContent value="details" className="space-y-4 mt-4">
-            {doc.description && (
-              <p className="text-sm text-[#3E4C59]">{doc.description}</p>
-            )}
-            <div className="flex items-center gap-3 flex-wrap">
-              {doc.file_url && (
-                <Button variant="outline" size="sm" onClick={() => window.open(doc.file_url, '_blank')} className="gap-2">
+          {/* DETAIL TAB */}
+          <TabsContent value="detail" className="flex-1 overflow-y-auto space-y-4 mt-4">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div><span className="text-[#B7CAC9] text-xs">Versión actual</span><p className="font-semibold">v{sv.version || 1}</p></div>
+              <div><span className="text-[#B7CAC9] text-xs">Tipo</span><p className="font-semibold uppercase">{sv.file_type || "—"}</p></div>
+              <div><span className="text-[#B7CAC9] text-xs">Estado</span><p>{statusCfg.label}</p></div>
+              <div><span className="text-[#B7CAC9] text-xs">Subido por</span><p className="truncate">{sv.created_by || "—"}</p></div>
+              {sv.description && <div className="col-span-2"><span className="text-[#B7CAC9] text-xs">Descripción</span><p>{sv.description}</p></div>}
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {sv.file_url && (
+                <Button variant="outline" size="sm" onClick={() => window.open(sv.file_url, '_blank')} className="gap-2">
                   <ExternalLink className="w-4 h-4" /> Abrir archivo
                 </Button>
               )}
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Cambiar estado</label>
-              <Select value={status} onValueChange={handleStatusChange}>
-                <SelectTrigger className="max-w-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(STATUS_CONFIG).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="text-xs text-[#B7CAC9]">
-              Creado por {doc.created_by} · {doc.created_date ? format(new Date(doc.created_date), "dd MMM yyyy HH:mm", { locale: es }) : ""}
-            </div>
-          </TabsContent>
-
-          {/* Comments Tab */}
-          <TabsContent value="comments" className="mt-4 space-y-4">
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {comments.length === 0 && (
-                <p className="text-sm text-[#3E4C59] text-center py-6">Sin comentarios aún</p>
+              <Button variant="outline" size="sm" onClick={handleNewVersion} disabled={uploading} className="gap-2">
+                {uploading ? <div className="animate-spin w-4 h-4 border-2 border-[#33A19A] border-t-transparent rounded-full" /> : <Upload className="w-4 h-4" />}
+                Nueva versión
+              </Button>
+              {sv.status === "draft" && (
+                <Button size="sm" variant="outline" onClick={handleRequestApproval} className="gap-2 text-yellow-700 border-yellow-300">
+                  <Clock className="w-4 h-4" /> Solicitar aprobación
+                </Button>
               )}
-              {comments.map((c, i) => (
-                <div key={i} className={`rounded-lg p-3 text-sm border
-                  ${c.type === "approval" ? "border-green-200 bg-green-50" :
-                    c.type === "rejection" ? "border-red-200 bg-red-50" :
-                    "border-[#B7CAC9]/20 bg-[#FFFAF3]"}`}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    {c.type === "approval" && <CheckCircle className="w-4 h-4 text-green-600" />}
-                    {c.type === "rejection" && <XCircle className="w-4 h-4 text-red-500" />}
-                    {c.type === "comment" && <MessageSquare className="w-4 h-4 text-[#33A19A]" />}
-                    <span className="font-medium text-[#1B2731]">{c.author_name || c.author_email}</span>
-                    <span className="text-xs text-[#B7CAC9] ml-auto">
-                      {c.timestamp ? format(new Date(c.timestamp), "dd MMM yyyy HH:mm", { locale: es }) : ""}
-                    </span>
-                  </div>
-                  <p className="text-[#3E4C59]">{c.text}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-2 border-t border-[#B7CAC9]/20 pt-4">
-              <Textarea
-                placeholder="Escribe un comentario..."
-                value={comment}
-                onChange={e => setComment(e.target.value)}
-                rows={3}
-              />
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={() => handleAddComment("comment")} disabled={!comment.trim() || saving} className="gap-2">
-                  <Send className="w-3 h-3" /> Comentar
-                </Button>
-                <Button size="sm" onClick={() => handleAddComment("approval")} disabled={!comment.trim() || saving} className="bg-green-600 hover:bg-green-700 text-white gap-2">
-                  <CheckCircle className="w-3 h-3" /> Aprobar
-                </Button>
-                <Button size="sm" onClick={() => handleAddComment("rejection")} disabled={!comment.trim() || saving} className="bg-red-500 hover:bg-red-600 text-white gap-2">
-                  <XCircle className="w-3 h-3" /> Rechazar
-                </Button>
-              </div>
+              {sv.status === "pending_approval" && (
+                <>
+                  <Button size="sm" onClick={() => handleApproval("approval")} className="bg-green-600 hover:bg-green-700 text-white gap-2">
+                    <CheckCircle className="w-4 h-4" /> Aprobar
+                  </Button>
+                  <Button size="sm" onClick={() => handleApproval("rejection")} className="bg-red-600 hover:bg-red-700 text-white gap-2">
+                    <XCircle className="w-4 h-4" /> Rechazar
+                  </Button>
+                </>
+              )}
             </div>
           </TabsContent>
 
-          {/* Versions Tab */}
-          <TabsContent value="versions" className="mt-4">
+          {/* VERSIONS TAB */}
+          <TabsContent value="versions" className="flex-1 overflow-y-auto mt-4">
             <div className="space-y-2">
-              {(allVersions || [doc]).sort((a, b) => (b.version || 1) - (a.version || 1)).map((v, i) => (
-                <div key={v.id} className={`flex items-center gap-3 p-3 rounded-lg border
-                  ${v.id === doc.id ? "border-[#33A19A] bg-[#33A19A]/5" : "border-[#B7CAC9]/20 bg-white"}`}
+              {versions.map(v => {
+                const vStatus = STATUS_CONFIG[v.status] || STATUS_CONFIG.draft;
+                return (
+                  <div
+                    key={v.id}
+                    onClick={() => setSelectedVersion(v)}
+                    className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors
+                      ${selectedVersion?.id === v.id ? "border-[#33A19A] bg-[#33A19A]/5" : "border-[#B7CAC9]/20 hover:border-[#33A19A]/40"}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[#33A19A]/10 flex items-center justify-center text-xs font-bold text-[#33A19A]">
+                        v{v.version || 1}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{v.is_latest ? "Versión actual" : `Versión ${v.version}`}</p>
+                        <p className="text-xs text-[#B7CAC9]">
+                          {v.created_by} · {v.created_date ? format(new Date(v.created_date), "dd MMM yyyy HH:mm", { locale: es }) : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className={`${vStatus.color} border-0 text-xs`}>{vStatus.label}</Badge>
+                      {v.file_url && (
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={e => { e.stopPropagation(); window.open(v.file_url, '_blank'); }}>
+                          <ExternalLink className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          {/* COMMENTS TAB */}
+          <TabsContent value="comments" className="flex-1 flex flex-col overflow-hidden mt-4">
+            <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+              {(sv.comments || []).length === 0 && (
+                <p className="text-sm text-[#B7CAC9] text-center py-6">Sin comentarios aún</p>
+              )}
+              {(sv.comments || []).map((c, i) => (
+                <div key={i} className={`flex gap-3 p-3 rounded-lg border
+                  ${c.type === "approval" ? "border-green-200 bg-green-50" : c.type === "rejection" ? "border-red-200 bg-red-50" : "border-[#B7CAC9]/20 bg-white"}`}
                 >
-                  <div className="w-8 h-8 rounded-full bg-[#33A19A]/10 flex items-center justify-center text-xs font-bold text-[#33A19A]">
-                    v{v.version || 1}
+                  <div className="w-8 h-8 rounded-full bg-[#33A19A] flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                    {c.author_name?.[0] || "U"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[#1B2731]">
-                      Versión {v.version || 1}
-                      {v.id === doc.id && <span className="ml-2 text-xs text-[#33A19A]">(actual)</span>}
-                    </p>
-                    <p className="text-xs text-[#3E4C59]">
-                      {v.created_by} · {v.created_date ? format(new Date(v.created_date), "dd MMM yyyy", { locale: es }) : ""}
-                    </p>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-medium">{c.author_name}</span>
+                      {c.type === "approval" && <Badge className="bg-green-100 text-green-700 border-0 text-xs">Aprobó</Badge>}
+                      {c.type === "rejection" && <Badge className="bg-red-100 text-red-700 border-0 text-xs">Rechazó</Badge>}
+                      <span className="text-xs text-[#B7CAC9] ml-auto">
+                        {c.timestamp ? format(new Date(c.timestamp), "dd MMM HH:mm", { locale: es }) : ""}
+                      </span>
+                    </div>
+                    <p className="text-sm text-[#3E4C59]">{c.text}</p>
                   </div>
-                  <Badge className={`${(STATUS_CONFIG[v.status] || STATUS_CONFIG.draft).color} border-0 text-xs`}>
-                    {(STATUS_CONFIG[v.status] || STATUS_CONFIG.draft).label}
-                  </Badge>
-                  {v.file_url && (
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => window.open(v.file_url, '_blank')}>
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
-                  )}
                 </div>
               ))}
+            </div>
+            <div className="flex-shrink-0 space-y-2 border-t pt-3">
+              <Textarea
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+                placeholder="Escribe un comentario..."
+                rows={2}
+                className="resize-none"
+              />
+              <div className="flex gap-2 justify-end">
+                {sv.status === "pending_approval" && (
+                  <>
+                    <Button size="sm" onClick={() => handleApproval("approval")} disabled={submitting} className="bg-green-600 hover:bg-green-700 text-white gap-1">
+                      <CheckCircle className="w-3 h-3" /> Aprobar
+                    </Button>
+                    <Button size="sm" onClick={() => handleApproval("rejection")} disabled={submitting} className="bg-red-600 hover:bg-red-700 text-white gap-1">
+                      <XCircle className="w-3 h-3" /> Rechazar
+                    </Button>
+                  </>
+                )}
+                <Button size="sm" onClick={handleComment} disabled={submitting || !comment.trim()} className="bg-[#33A19A] hover:bg-[#2A857F] text-white">
+                  Comentar
+                </Button>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
