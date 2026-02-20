@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Clock, User, MessageSquare, Paperclip, LinkIcon } from "lucide-react";
+import { Clock, User, MessageSquare, Paperclip, LinkIcon, Send } from "lucide-react";
 
 const STATUSES = [
   { value: "backlog", label: "Backlog" },
