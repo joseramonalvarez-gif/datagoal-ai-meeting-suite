@@ -378,8 +378,8 @@ ${report.content_markdown?.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>').r
     onUpdate();
   };
 
-  const ActionButton = ({ icon: Icon, label, onClick, action, variant = "outline" }) => (
-    <Button onClick={onClick} disabled={processing !== null} variant={variant} size="sm" className="gap-2 text-xs">
+  const ActionButton = ({ icon: Icon, label, onClick, action, variant = "outline", disabled = false, title }) => (
+    <Button onClick={onClick} disabled={processing !== null || disabled} variant={variant} size="sm" className="gap-2 text-xs" title={title}>
       {processing === action ? <Loader2 className="w-4 h-4 animate-spin" /> : <Icon className="w-4 h-4" />}
       {label}
     </Button>
@@ -389,9 +389,9 @@ ${report.content_markdown?.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>').r
     <div className="flex flex-wrap gap-2">
       <ActionButton icon={Upload} label="Subir audio" onClick={handleUploadAudio} action="audio" />
       <ActionButton icon={FileText} label="Subir transcripción" onClick={handleUploadTranscript} action="transcript_upload" />
-      <ActionButton icon={Mic} label="Transcribir" onClick={handleTranscribe} action="transcribe" />
-      <ActionButton icon={Brain} label="Generar informe" onClick={handleGenerateReport} action="report" variant="default" />
-      <ActionButton icon={ListChecks} label="Extraer tareas" onClick={handleExtractTasks} action="tasks" />
+      <ActionButton icon={Mic} label="Transcribir" onClick={handleTranscribe} action="transcribe" disabled={!meeting?.audio_url} title={!meeting?.audio_url ? "Sube un audio primero" : undefined} />
+      <ActionButton icon={Brain} label="Generar informe" onClick={handleGenerateReport} action="report" variant={isTranscribed ? "default" : "outline"} disabled={!isTranscribed} title={!isTranscribed ? "Requiere transcripción completada" : undefined} />
+      <ActionButton icon={ListChecks} label="Extraer tareas" onClick={handleExtractTasks} action="tasks" disabled={!isTranscribed} title={!isTranscribed ? "Requiere transcripción completada" : undefined} />
       <ActionButton icon={Mail} label="Enviar informe" onClick={handleSendEmail} action="email" />
     </div>
   );
