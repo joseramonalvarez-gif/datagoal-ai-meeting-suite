@@ -59,6 +59,7 @@ import Projects from './pages/Projects';
 import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
 import QAControlCenter from './pages/QAControlCenter';
+import CalendarView from './pages/CalendarView';
 import __Layout from './Layout.jsx';
 
 
@@ -75,6 +76,7 @@ export const PAGES = {
     "Tasks": Tasks,
     "TimeTracking": TimeTracking,
     "QAControlCenter": QAControlCenter,
+    "CalendarView": CalendarView,
 }
 
 export const pagesConfig = {
