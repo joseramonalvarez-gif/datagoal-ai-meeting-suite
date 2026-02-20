@@ -25,6 +25,8 @@ const NAV_ITEMS = [
   { name: "Hitos", icon: Flag, page: "Milestones" },
   { name: "Clientes", icon: FolderTree, page: "Clients" },
   { name: "Proyectos", icon: FolderTree, page: "Projects" },
+  { name: "Notificaciones", icon: Bell, page: "Notifications" },
+  { name: "Auditoría", icon: Shield, page: "AuditLog" },
 ];
 
 export default function Layout({ children, currentPageName }) {
