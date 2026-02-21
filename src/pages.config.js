@@ -69,6 +69,7 @@ import AgentsHub from './pages/AgentsHub';
 import KnowledgeHub from './pages/KnowledgeHub';
 import AutomationRuns from './pages/AutomationRuns';
 import MonitoringDashboard from './pages/MonitoringDashboard';
+import DeliveryCenter from './pages/DeliveryCenter';
 import __Layout from './Layout.jsx';
 
 
@@ -95,6 +96,7 @@ export const PAGES = {
     "KnowledgeHub": KnowledgeHub,
     "AutomationRuns": AutomationRuns,
     "MonitoringDashboard": MonitoringDashboard,
+    "DeliveryCenter": DeliveryCenter,
 }
 
 export const pagesConfig = {
