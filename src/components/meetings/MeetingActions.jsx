@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Upload, FileText, Mic, Brain, ListChecks, Mail, Loader2, Settings2, Video, AlertCircle } from "lucide-react";
 import ReportTemplateManager from "./ReportTemplateManager";
 import SummaryGenerator from "./SummaryGenerator";
+import TranscriptUploadModal from "./TranscriptUploadModal";
 import { toast } from "sonner";
 import { notifyTaskAssigned } from "../tasks/taskNotifications";
 
@@ -41,6 +42,7 @@ export default function MeetingActions({ meeting, onUpdate }) {
   const [gmeetUrl, setGmeetUrl] = useState("");
   const [gmeetProcessing, setGmeetProcessing] = useState(false);
   const [transcript, setTranscript] = useState(null);
+  const [showTranscriptUpload, setShowTranscriptUpload] = useState(false);
 
   useEffect(() => {
     if (["transcribed", "report_generated", "approved", "closed"].includes(meeting?.status)) {
@@ -569,10 +571,10 @@ ${report.content_markdown?.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>').r
     <>
       <div className="space-y-3">
         <div className="flex flex-wrap gap-2">
-          <ActionButton icon={Upload} label="Subir audio" onClick={handleUploadAudio} action="audio"
-            title={`Formatos: MP3, WAV, M4A, OGG, WEBM, FLAC, AAC, OPUS (máx ${MAX_AUDIO_MB}MB)`} />
-          <ActionButton icon={FileText} label="Subir transcripción" onClick={handleUploadTranscript} action="transcript_upload"
-            title={`Formatos: TXT, DOCX, PDF, SRT, VTT, ODT, RTF (máx ${MAX_DOC_MB}MB)`} />
+           <ActionButton icon={Upload} label="Subir audio" onClick={handleUploadAudio} action="audio"
+             title={`Formatos: MP3, WAV, M4A, OGG, WEBM, FLAC, AAC, OPUS (máx ${MAX_AUDIO_MB}MB)`} />
+           <ActionButton icon={FileText} label="Subir transcripción" onClick={() => setShowTranscriptUpload(true)} action="transcript_upload"
+             title={`Formatos: MARKDOWN, TXT, DOCX (máx ${MAX_DOC_MB}MB)`} />
           <ActionButton icon={Video} label="Google Meet" onClick={() => setShowGMeet(true)} action="gmeet_open"
             title="Importar transcripción directa de Google Meet" />
           <ActionButton icon={Mic} label="Transcribir" onClick={handleTranscribe} action="transcribe"
@@ -660,6 +662,16 @@ ${report.content_markdown?.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>').r
       </Dialog>
 
       <ReportTemplateManager open={showTemplates} onClose={() => setShowTemplates(false)} />
+
+      <TranscriptUploadModal 
+        open={showTranscriptUpload} 
+        onOpenChange={setShowTranscriptUpload}
+        meeting_id={meeting.id}
+        onSuccess={() => {
+          setShowTranscriptUpload(false);
+          onUpdate();
+        }}
+      />
     </>
   );
 }
