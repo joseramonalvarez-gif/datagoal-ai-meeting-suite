@@ -110,7 +110,8 @@ export default function MeetingActions({ meeting, onUpdate }) {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = AUDIO_ACCEPT;
-    input.addEventListener("change", async (e) => {
+    
+    const handleChange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
@@ -118,6 +119,7 @@ export default function MeetingActions({ meeting, onUpdate }) {
       const sizeMB = file.size / (1024 * 1024);
       if (sizeMB > MAX_AUDIO_MB) {
         toast.error(`El archivo pesa ${sizeMB.toFixed(0)} MB. El límite es ${MAX_AUDIO_MB} MB.`);
+        input.removeEventListener("change", handleChange);
         return;
       }
 
@@ -129,18 +131,27 @@ export default function MeetingActions({ meeting, onUpdate }) {
       setProcessing("audio");
       toast.info(`Subiendo audio (${sizeMB.toFixed(1)} MB)...`);
 
-      const { file_url } = await base44.integrations.Core.UploadFile({ file: normalizedFile });
-      await base44.entities.Meeting.update(meeting.id, {
-        audio_url: file_url, source_type: "audio_upload", status: "recorded"
-      });
-      toast.success("Audio subido. Iniciando transcripción automática...");
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file: normalizedFile });
+        await base44.entities.Meeting.update(meeting.id, {
+          audio_url: file_url, source_type: "audio_upload", status: "recorded"
+        });
+        toast.success("Audio subido. Iniciando transcripción automática...");
 
-      setProcessing("transcribe");
-      await doTranscribeFromUrl(file_url, meeting.id, meeting.client_id, meeting.project_id);
-      toast.success("✅ Transcripción completada");
-      setProcessing(null);
-      onUpdate();
-    });
+        setProcessing("transcribe");
+        await doTranscribeFromUrl(file_url, meeting.id, meeting.client_id, meeting.project_id);
+        toast.success("✅ Transcripción completada");
+        setProcessing(null);
+        onUpdate();
+      } catch (error) {
+        toast.error(error.message || "Error al procesar el audio");
+        setProcessing(null);
+      } finally {
+        input.removeEventListener("change", handleChange);
+      }
+    };
+    
+    input.addEventListener("change", handleChange);
     input.click();
   };
 
@@ -149,85 +160,100 @@ export default function MeetingActions({ meeting, onUpdate }) {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = TRANSCRIPT_ACCEPT;
-    input.addEventListener("change", async (e) => {
+    
+    const handleChange = async (e) => {
       const file = e.target.files[0];
-      if (!file) return;
+      if (!file) {
+        input.removeEventListener("change", handleChange);
+        return;
+      }
 
       const sizeMB = file.size / (1024 * 1024);
       if (sizeMB > MAX_DOC_MB) {
         toast.error(`El archivo pesa ${sizeMB.toFixed(0)} MB. El límite es ${MAX_DOC_MB} MB.`);
+        input.removeEventListener("change", handleChange);
         return;
       }
 
       setProcessing("transcript_upload");
       toast.info("Subiendo documento y extrayendo transcripción...");
 
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      try {
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-      // Use InvokeLLM with file_urls — much more reliable than ExtractDataFromUploadedFile for docx/pdf
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Extract the full transcript from this document.
+        // Use InvokeLLM with file_urls — much more reliable than ExtractDataFromUploadedFile for docx/pdf
+        const result = await base44.integrations.Core.InvokeLLM({
+          prompt: `Extract the full transcript from this document.
 The document is a meeting transcript or recording transcript.
 - Extract ALL text content completely and literally
 - If there are speaker labels/timestamps, preserve them as structured segments
 - If it's a plain text document, create segments splitting by speaker turns or paragraphs
 - Return the full_text as a single string of all content
 - For segments, identify: start_time (or empty if none), end_time (or empty), speaker_label, text_literal`,
-        file_urls: [file_url],
-        response_json_schema: {
-          type: "object",
-          properties: {
-            full_text: { type: "string" },
-            segments: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  start_time: { type: "string" },
-                  end_time: { type: "string" },
-                  speaker_id: { type: "string" },
-                  speaker_label: { type: "string" },
-                  text_literal: { type: "string" }
+          file_urls: [file_url],
+          response_json_schema: {
+            type: "object",
+            properties: {
+              full_text: { type: "string" },
+              segments: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    start_time: { type: "string" },
+                    end_time: { type: "string" },
+                    speaker_id: { type: "string" },
+                    speaker_label: { type: "string" },
+                    text_literal: { type: "string" }
+                  }
                 }
               }
             }
           }
+        });
+
+        const hasSegments = result?.segments?.length > 0;
+        const fullText = result?.full_text || result?.segments?.map(s => `${s.speaker_label ? s.speaker_label + ": " : ""}${s.text_literal}`).join("\n") || "";
+
+        if (!fullText) {
+          toast.error("No se pudo extraer texto del documento. Verifica el formato del archivo.");
+          setProcessing(null);
+          input.removeEventListener("change", handleChange);
+          return;
         }
-      });
 
-      const hasSegments = result?.segments?.length > 0;
-      const fullText = result?.full_text || result?.segments?.map(s => `${s.speaker_label ? s.speaker_label + ": " : ""}${s.text_literal}`).join("\n") || "";
+        const existingTranscripts = await base44.entities.Transcript.filter({ meeting_id: meeting.id });
+        const nextVersion = existingTranscripts.length + 1;
 
-      if (!fullText) {
-        toast.error("No se pudo extraer texto del documento. Verifica el formato del archivo.");
+        await base44.entities.Transcript.create({
+          meeting_id: meeting.id,
+          client_id: meeting.client_id,
+          project_id: meeting.project_id,
+          version: nextVersion,
+          status: hasSegments ? "completed" : "no_timeline",
+          has_timeline: hasSegments,
+          has_diarization: hasSegments && result.segments.some(s => s.speaker_label && s.speaker_label !== result.segments[0]?.speaker_label),
+          segments: result.segments || [],
+          full_text: fullText,
+          source: "manual_upload",
+          ai_metadata: { model: "gemini", generated_at: new Date().toISOString() }
+        });
+
+        await base44.entities.Meeting.update(meeting.id, {
+          source_type: "transcript_upload", status: "transcribed"
+        });
+        toast.success("✅ Transcripción extraída e importada correctamente");
         setProcessing(null);
-        return;
+        onUpdate();
+      } catch (error) {
+        toast.error(error.message || "Error al procesar la transcripción");
+        setProcessing(null);
+      } finally {
+        input.removeEventListener("change", handleChange);
       }
-
-      const existingTranscripts = await base44.entities.Transcript.filter({ meeting_id: meeting.id });
-      const nextVersion = existingTranscripts.length + 1;
-
-      await base44.entities.Transcript.create({
-        meeting_id: meeting.id,
-        client_id: meeting.client_id,
-        project_id: meeting.project_id,
-        version: nextVersion,
-        status: hasSegments ? "completed" : "no_timeline",
-        has_timeline: hasSegments,
-        has_diarization: hasSegments && result.segments.some(s => s.speaker_label && s.speaker_label !== result.segments[0]?.speaker_label),
-        segments: result.segments || [],
-        full_text: fullText,
-        source: "manual_upload",
-        ai_metadata: { model: "gemini", generated_at: new Date().toISOString() }
-      });
-
-      await base44.entities.Meeting.update(meeting.id, {
-        source_type: "transcript_upload", status: "transcribed"
-      });
-      toast.success("✅ Transcripción extraída e importada correctamente");
-      setProcessing(null);
-      onUpdate();
-    });
+    };
+    
+    input.addEventListener("change", handleChange);
     input.click();
   };
 
