@@ -71,6 +71,7 @@ import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
 import WorkflowRules from './pages/WorkflowRules';
 import PromptTemplateManager from './pages/PromptTemplateManager';
+import ReportTemplateManager from './pages/ReportTemplateManager';
 import __Layout from './Layout.jsx';
 
 
@@ -99,6 +100,7 @@ export const PAGES = {
     "TimeTracking": TimeTracking,
     "WorkflowRules": WorkflowRules,
     "PromptTemplateManager": PromptTemplateManager,
+    "ReportTemplateManager": ReportTemplateManager,
 }
 
 export const pagesConfig = {
