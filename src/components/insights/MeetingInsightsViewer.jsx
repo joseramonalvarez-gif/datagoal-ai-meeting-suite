@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Lightbulb, Target, TrendingUp, Loader, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
+import { AlertCircle, Lightbulb, Target, TrendingUp, Loader, AlertTriangle, CheckCircle, FileText, Lock } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
+import { canTriggerAnalysis, canViewInsights } from '../lib/roleUtils';
 
 const severityColors = {
   low: 'bg-blue-100 text-blue-800',
@@ -36,8 +37,14 @@ export default function MeetingInsightsViewer({ transcriptId, meetingId }) {
   const [error, setError] = useState(null);
   const [selectedModels, setSelectedModels] = useState(['pakito_mckensey', 'copywriter_data_goal']);
   const [showModelSelector, setShowModelSelector] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
+    const loadUser = async () => {
+      const me = await base44.auth.me();
+      setUser(me);
+    };
+    loadUser();
     loadInsights();
   }, [transcriptId]);
 
@@ -119,50 +126,66 @@ export default function MeetingInsightsViewer({ transcriptId, meetingId }) {
   }
 
   if (!insights) {
+    const canAnalyze = user && canTriggerAnalysis(user.role);
+    const canView = user && canViewInsights(user.role);
+
+    if (!canView) {
+      return (
+        <div className="text-center py-12">
+          <Lock className="w-12 h-12 text-[#B7CAC9] mx-auto mb-3" />
+          <p className="text-[#3E4C59]">No tienes permisos para ver análisis</p>
+        </div>
+      );
+    }
+
     return (
       <div className="text-center py-12">
         <p className="text-[#3E4C59] mb-6">No hay análisis disponible para esta transcripción</p>
         
-        {!showModelSelector ? (
-          <button
-            onClick={() => setShowModelSelector(true)}
-            className="px-4 py-2 bg-[#33A19A] text-white rounded-lg hover:bg-[#2A857F]"
-          >
-            Analizar con GPTs
-          </button>
+        {canAnalyze ? (
+          !showModelSelector ? (
+            <button
+              onClick={() => setShowModelSelector(true)}
+              className="px-4 py-2 bg-[#33A19A] text-white rounded-lg hover:bg-[#2A857F]"
+            >
+              Analizar con GPTs
+            </button>
+          ) : (
+            <Card className="p-6 border-[#B7CAC9]/30 max-w-md mx-auto">
+              <h3 className="font-semibold text-[#1B2731] mb-4">Selecciona GPTs a usar:</h3>
+              <div className="space-y-3 mb-6">
+                {Object.entries(GPT_MODELS).map(([key, model]) => (
+                  <label key={key} className="flex items-center gap-3 p-3 border border-[#B7CAC9]/20 rounded-lg cursor-pointer hover:bg-[#FFFAF3]">
+                    <Checkbox
+                      checked={selectedModels.includes(key)}
+                      onCheckedChange={() => toggleModel(key)}
+                    />
+                    <div className="text-left flex-1">
+                      <p className="font-medium text-[#1B2731]">{model.label}</p>
+                      <p className="text-xs text-[#3E4C59]">{model.description}</p>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowModelSelector(false)}
+                  className="flex-1 px-4 py-2 border border-[#B7CAC9] text-[#1B2731] rounded-lg hover:bg-[#FFFAF3]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={analyzeTranscript}
+                  disabled={selectedModels.length === 0}
+                  className="flex-1 px-4 py-2 bg-[#33A19A] text-white rounded-lg hover:bg-[#2A857F] disabled:opacity-50"
+                >
+                  Analizar
+                </button>
+              </div>
+            </Card>
+          )
         ) : (
-          <Card className="p-6 border-[#B7CAC9]/30 max-w-md mx-auto">
-            <h3 className="font-semibold text-[#1B2731] mb-4">Selecciona GPTs a usar:</h3>
-            <div className="space-y-3 mb-6">
-              {Object.entries(GPT_MODELS).map(([key, model]) => (
-                <label key={key} className="flex items-center gap-3 p-3 border border-[#B7CAC9]/20 rounded-lg cursor-pointer hover:bg-[#FFFAF3]">
-                  <Checkbox
-                    checked={selectedModels.includes(key)}
-                    onCheckedChange={() => toggleModel(key)}
-                  />
-                  <div className="text-left flex-1">
-                    <p className="font-medium text-[#1B2731]">{model.label}</p>
-                    <p className="text-xs text-[#3E4C59]">{model.description}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowModelSelector(false)}
-                className="flex-1 px-4 py-2 border border-[#B7CAC9] text-[#1B2731] rounded-lg hover:bg-[#FFFAF3]"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={analyzeTranscript}
-                disabled={selectedModels.length === 0}
-                className="flex-1 px-4 py-2 bg-[#33A19A] text-white rounded-lg hover:bg-[#2A857F] disabled:opacity-50"
-              >
-                Analizar
-              </button>
-            </div>
-          </Card>
+          <p className="text-[#B7CAC9] text-sm">Solo los analistas pueden disparar análisis</p>
         )}
       </div>
     );

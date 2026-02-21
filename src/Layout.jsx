@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { base44 } from "@/api/base44Client";
+import { canManageGPT } from "./lib/roleUtils";
 import {
   LayoutDashboard, Calendar, Clock, FolderTree, Shield, Users,
   FileText, CheckSquare, MessageSquare, FileCheck, Flag,
@@ -79,6 +80,11 @@ export default function Layout({ children, currentPageName }) {
 
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           {NAV_ITEMS.map((item) => {
+            // Hide GPT Config if user is not admin
+            if (item.page === 'GPTConfigurationManager' && user && !canManageGPT(user.role)) {
+              return null;
+            }
+
             const isActive = currentPageName === item.page;
             return (
               <Link
@@ -123,6 +129,11 @@ export default function Layout({ children, currentPageName }) {
             </div>
             <nav className="space-y-1">
               {NAV_ITEMS.map((item) => {
+                // Hide GPT Config if user is not admin
+                if (item.page === 'GPTConfigurationManager' && user && !canManageGPT(user.role)) {
+                  return null;
+                }
+
                 const isActive = currentPageName === item.page;
                 return (
                   <Link

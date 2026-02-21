@@ -3,6 +3,8 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { canManageGPT } from '../lib/roleUtils';
+import RoleGuard from '../components/RoleGuard';
 import GPTConfigForm from '../components/gpt/GPTConfigForm';
 import GPTConfigList from '../components/gpt/GPTConfigList';
 
@@ -12,10 +14,26 @@ export default function GPTConfigurationManager() {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingConfig, setEditingConfig] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    loadConfigs();
+    loadUser();
   }, []);
+
+  const loadUser = async () => {
+    try {
+      const me = await base44.auth.me();
+      setUser(me);
+      if (canManageGPT(me.role)) {
+        loadConfigs();
+      } else {
+        setLoading(false);
+      }
+    } catch (err) {
+      setError('Error al cargar usuario');
+      setLoading(false);
+    }
+  };
 
   const loadConfigs = async () => {
     try {
@@ -63,8 +81,9 @@ export default function GPTConfigurationManager() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Header */}
+    <RoleGuard user={user} requiredPermission={canManageGPT}>
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-heading font-bold text-[#1B2731]">Configuraciones GPT</h1>
