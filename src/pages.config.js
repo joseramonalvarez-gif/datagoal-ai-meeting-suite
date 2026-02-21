@@ -66,6 +66,7 @@ import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
 import WorkflowRules from './pages/WorkflowRules';
 import AgentsHub from './pages/AgentsHub';
+import KnowledgeHub from './pages/KnowledgeHub';
 import __Layout from './Layout.jsx';
 
 
@@ -89,6 +90,7 @@ export const PAGES = {
     "TimeTracking": TimeTracking,
     "WorkflowRules": WorkflowRules,
     "AgentsHub": AgentsHub,
+    "KnowledgeHub": KnowledgeHub,
 }
 
 export const pagesConfig = {
