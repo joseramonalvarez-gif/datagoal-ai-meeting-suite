@@ -308,6 +308,7 @@ export async function runFull({ run, selectedClient, selectedProject, user, onPr
     const ev = `prev_transcript_id: ${prevId}, new_transcript_id: ${newTranscript.id}, prev_version: ${prevVersion}, new_version: ${prevVersion+1}, not_overwritten: ${notOverwritten}`;
     const c = await saveCheck(runId, "TRANS-002", "Versionado de transcripción", notOverwritten ? "PASSED" : "FAILED", ev, !notOverwritten ? "Se sobrescribió la transcripción anterior" : "", Date.now()-t6);
     checks.push(c);
+    } // end supportedExts2 block
   } catch(e) {
     const c = await saveCheck(runId, "TRANS-002", "Versionado de transcripción", "FAILED", "", String(e), Date.now()-t6);
     checks.push(c);
