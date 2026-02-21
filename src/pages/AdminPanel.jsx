@@ -327,18 +327,17 @@ export default function AdminPanel() {
                 </Button>
               </CardContent>
             </Card>
-          ) : (
-           <Card>
-             <CardContent className="pt-6 text-center text-[#3E4C59]">
-               <Shield className="w-8 h-8 mx-auto mb-2 opacity-50" />
-               <p>Selecciona un usuario de la pestaña "Usuarios" para editar permisos</p>
-             </CardContent>
-           </Card>
-          )}
-          </>
-          )}
+            </>
+            ) : (
+            <Card>
+            <CardContent className="pt-6 text-center text-[#3E4C59]">
+              <Shield className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              <p>Selecciona un usuario de la pestaña "Usuarios" para editar permisos</p>
+            </CardContent>
+            </Card>
+            )}
 
-          {/* Matrix View */}
+            {/* Matrix View */}
           <Card>
             <CardHeader>
               <CardTitle>Matriz de Permisos Actual</CardTitle>
