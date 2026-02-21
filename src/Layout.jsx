@@ -34,6 +34,7 @@ const NAV_ITEMS = [
   { name: "Agentes WhatsApp", icon: MessageCircle, page: "AgentsHub" },
   { name: "Notif. Config", icon: Bell, page: "NotificationSettings" },
   { name: "Automatizaciones", icon: Zap, page: "WorkflowRules" },
+  { name: "Historial Auto.", icon: Zap, page: "AutomationRuns" },
   { name: "GPT Config", icon: Zap, page: "GPTConfigurationManager" },
 ];
 
