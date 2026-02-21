@@ -294,35 +294,36 @@ export async function runFull({ run, selectedClient, selectedProject, user, onPr
     const meeting = (await base44.entities.Meeting.filter({ id: qaMeetingId }))[0];
     const ext2 = (meeting.audio_url || "").split("?")[0].split(".").pop().toLowerCase();
     const supportedExts2 = ["mp3","wav","ogg","webm","mp4","flac","aac"];
+
     if (!supportedExts2.includes(ext2)) {
       const c = await saveCheck(runId, "TRANS-002", "Versionado de transcripción", "SKIPPED",
         `Tipo de archivo no soportado: .${ext2}`, "", Date.now()-t6);
       checks.push(c);
     } else {
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: "Transcribe literally. Return segments with start_time HH:MM:SS, end_time, speaker_id, speaker_label, text_literal.",
-      file_urls: [meeting.audio_url],
-      response_json_schema: { type: "object", properties: { segments: { type: "array", items: { type: "object" }}, full_text: { type: "string" }}}
-    });
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: "Transcribe literally. Return segments with start_time HH:MM:SS, end_time, speaker_id, speaker_label, text_literal.",
+        file_urls: [meeting.audio_url],
+        response_json_schema: { type: "object", properties: { segments: { type: "array", items: { type: "object" } }, full_text: { type: "string" } } }
+      });
 
-    const newTranscript = await base44.entities.Transcript.create({
-      meeting_id: qaMeetingId,
-      client_id: selectedClient?.id || "",
-      version: prevVersion + 1,
-      status: "completed",
-      has_timeline: true,
-      has_diarization: true,
-      segments: result.segments || [],
-      full_text: result.full_text || "",
-      source: "audio_transcription",
-      ai_metadata: { model: "gemini", generated_at: new Date().toISOString() }
-    });
+      const newTranscript = await base44.entities.Transcript.create({
+        meeting_id: qaMeetingId,
+        client_id: selectedClient?.id || "",
+        version: prevVersion + 1,
+        status: "completed",
+        has_timeline: true,
+        has_diarization: true,
+        segments: result.segments || [],
+        full_text: result.full_text || "",
+        source: "audio_transcription",
+        ai_metadata: { model: "gemini", generated_at: new Date().toISOString() }
+      });
 
-    const notOverwritten = newTranscript.id !== prevId;
-    const ev = `prev_transcript_id: ${prevId}, new_transcript_id: ${newTranscript.id}, prev_version: ${prevVersion}, new_version: ${prevVersion+1}, not_overwritten: ${notOverwritten}`;
-    const c = await saveCheck(runId, "TRANS-002", "Versionado de transcripción", notOverwritten ? "PASSED" : "FAILED", ev, !notOverwritten ? "Se sobrescribió la transcripción anterior" : "", Date.now()-t6);
-    checks.push(c);
-    } // end supportedExts2 block
+      const notOverwritten = newTranscript.id !== prevId;
+      const ev = `prev_transcript_id: ${prevId}, new_transcript_id: ${newTranscript.id}, prev_version: ${prevVersion}, new_version: ${prevVersion + 1}, not_overwritten: ${notOverwritten}`;
+      const c = await saveCheck(runId, "TRANS-002", "Versionado de transcripción", notOverwritten ? "PASSED" : "FAILED", ev, !notOverwritten ? "Se sobrescribió la transcripción anterior" : "", Date.now()-t6);
+      checks.push(c);
+    }
   } catch(e) {
     const c = await saveCheck(runId, "TRANS-002", "Versionado de transcripción", "FAILED", "", String(e), Date.now()-t6);
     checks.push(c);
