@@ -47,6 +47,7 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AdminPanel from './pages/AdminPanel';
 import AgentsHub from './pages/AgentsHub';
 import AgentsWhatsApp from './pages/AgentsWhatsApp';
 import AuditLog from './pages/AuditLog';
@@ -54,9 +55,16 @@ import AutomationRuns from './pages/AutomationRuns';
 import CalendarView from './pages/CalendarView';
 import Chat from './pages/Chat';
 import Clients from './pages/Clients';
+import ComplianceCenter from './pages/ComplianceCenter';
 import Dashboard from './pages/Dashboard';
+import DeliveryActivityLog from './pages/DeliveryActivityLog';
+import DeliveryAlertsManager from './pages/DeliveryAlertsManager';
+import DeliveryAnalytics from './pages/DeliveryAnalytics';
 import DeliveryCenter from './pages/DeliveryCenter';
+import DeliverySettings from './pages/DeliverySettings';
+import DeliveryWebhooksManager from './pages/DeliveryWebhooksManager';
 import Documents from './pages/Documents';
+import ExecutiveDashboard from './pages/ExecutiveDashboard';
 import GPTConfigurationManager from './pages/GPTConfigurationManager';
 import KnowledgeHub from './pages/KnowledgeHub';
 import Meetings from './pages/Meetings';
@@ -65,25 +73,19 @@ import MonitoringDashboard from './pages/MonitoringDashboard';
 import NotificationSettings from './pages/NotificationSettings';
 import Notifications from './pages/Notifications';
 import Projects from './pages/Projects';
+import PromptTemplateManager from './pages/PromptTemplateManager';
 import QAControlCenter from './pages/QAControlCenter';
+import ReportTemplateManager from './pages/ReportTemplateManager';
 import Search from './pages/Search';
 import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
 import WorkflowRules from './pages/WorkflowRules';
-import PromptTemplateManager from './pages/PromptTemplateManager';
-import ReportTemplateManager from './pages/ReportTemplateManager';
-import DeliveryAnalytics from './pages/DeliveryAnalytics';
-import DeliverySettings from './pages/DeliverySettings';
-import DeliveryActivityLog from './pages/DeliveryActivityLog';
-import DeliveryAlertsManager from './pages/DeliveryAlertsManager';
-import DeliveryWebhooksManager from './pages/DeliveryWebhooksManager';
-import ExecutiveDashboard from './pages/ExecutiveDashboard';
-import AdminPanel from './pages/AdminPanel';
-import ComplianceCenter from './pages/ComplianceCenter';
+import BigQueryReports from './pages/BigQueryReports';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AdminPanel": AdminPanel,
     "AgentsHub": AgentsHub,
     "AgentsWhatsApp": AgentsWhatsApp,
     "AuditLog": AuditLog,
@@ -91,9 +93,16 @@ export const PAGES = {
     "CalendarView": CalendarView,
     "Chat": Chat,
     "Clients": Clients,
+    "ComplianceCenter": ComplianceCenter,
     "Dashboard": Dashboard,
+    "DeliveryActivityLog": DeliveryActivityLog,
+    "DeliveryAlertsManager": DeliveryAlertsManager,
+    "DeliveryAnalytics": DeliveryAnalytics,
     "DeliveryCenter": DeliveryCenter,
+    "DeliverySettings": DeliverySettings,
+    "DeliveryWebhooksManager": DeliveryWebhooksManager,
     "Documents": Documents,
+    "ExecutiveDashboard": ExecutiveDashboard,
     "GPTConfigurationManager": GPTConfigurationManager,
     "KnowledgeHub": KnowledgeHub,
     "Meetings": Meetings,
@@ -102,21 +111,14 @@ export const PAGES = {
     "NotificationSettings": NotificationSettings,
     "Notifications": Notifications,
     "Projects": Projects,
+    "PromptTemplateManager": PromptTemplateManager,
     "QAControlCenter": QAControlCenter,
+    "ReportTemplateManager": ReportTemplateManager,
     "Search": Search,
     "Tasks": Tasks,
     "TimeTracking": TimeTracking,
     "WorkflowRules": WorkflowRules,
-    "PromptTemplateManager": PromptTemplateManager,
-    "ReportTemplateManager": ReportTemplateManager,
-    "DeliveryAnalytics": DeliveryAnalytics,
-    "DeliverySettings": DeliverySettings,
-    "DeliveryActivityLog": DeliveryActivityLog,
-    "DeliveryAlertsManager": DeliveryAlertsManager,
-    "DeliveryWebhooksManager": DeliveryWebhooksManager,
-    "ExecutiveDashboard": ExecutiveDashboard,
-    "AdminPanel": AdminPanel,
-    "ComplianceCenter": ComplianceCenter,
+    "BigQueryReports": BigQueryReports,
 }
 
 export const pagesConfig = {
