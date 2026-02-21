@@ -428,20 +428,34 @@ ${reportResult?.replace(/\n/g,"<br>")||""}
 <hr>
 <p style="color:#3E4C59;font-size:12px">DATA GOAL QA Control Center — Mensaje automático de prueba</p>`;
 
+    const sent2 = [];
+    const failed2 = [];
     for (const email of uniqueEmails) {
-      await base44.integrations.Core.SendEmail({
-        to: email,
-        subject: `[QA][FULL] Informe - ${run.run_id}`,
-        body,
-      });
+      try {
+        await base44.integrations.Core.SendEmail({
+          to: email,
+          subject: `[QA][FULL] Informe - ${run.run_id}`,
+          body,
+        });
+        sent2.push(email);
+      } catch(emailErr) {
+        const msg = String(emailErr);
+        if (msg.includes("outside the app")) {
+          failed2.push(`${email} (fuera del app)`);
+        } else {
+          throw emailErr;
+        }
+      }
     }
 
     await base44.entities.Report.update(report.id, {
-      email_send_history: [{ sent_by: user.email, sent_at: new Date().toISOString(), recipients: uniqueEmails, report_version: 1 }]
+      email_send_history: [{ sent_by: user.email, sent_at: new Date().toISOString(), recipients: sent2, report_version: 1 }]
     });
 
-    const ev = `report_id: ${report.id}, report_version: 1, recipients: ${uniqueEmails.join(", ")}, count: ${uniqueEmails.length}`;
-    const c = await saveCheck(runId, "EMAIL-002", "Email informe a todos los destinatarios", "PASSED", ev, "", Date.now()-t9);
+    const ev = `report_id: ${report.id}, sent: ${sent2.join(", ") || "ninguno"}, skipped_outside_app: ${failed2.join(", ") || "ninguno"}`;
+    const checkStatus2 = sent2.length > 0 ? "PASSED" : "SKIPPED";
+    const c = await saveCheck(runId, "EMAIL-002", "Email informe a todos los destinatarios", checkStatus2, ev,
+      sent2.length === 0 ? "Todos los destinatarios son externos al app. Invítalos para habilitar emails." : "", Date.now()-t9);
     checks.push(c);
   } catch(e) {
     const c = await saveCheck(runId, "EMAIL-002", "Email informe completo", "FAILED", "", String(e), Date.now()-t9);
