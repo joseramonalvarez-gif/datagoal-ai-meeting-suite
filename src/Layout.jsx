@@ -21,6 +21,7 @@ const NAV_ITEMS = [
   { name: "Tareas", icon: CheckSquare, page: "Tasks" },
   { name: "Documentos", icon: FileText, page: "Documents" },
   { name: "Calendario", icon: Calendar, page: "CalendarView" },
+  { name: "Búsqueda", icon: Search, page: "Search" },
   { name: "Registro Horas", icon: Clock, page: "TimeTracking" },
   { name: "Chat", icon: MessageSquare, page: "Chat" },
   { name: "Hitos", icon: Flag, page: "Milestones" },

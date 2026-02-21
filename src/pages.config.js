@@ -63,6 +63,7 @@ import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
 import WorkflowRules from './pages/WorkflowRules';
 import GPTConfigurationManager from './pages/GPTConfigurationManager';
+import Search from './pages/Search';
 import __Layout from './Layout.jsx';
 
 
@@ -83,6 +84,7 @@ export const PAGES = {
     "TimeTracking": TimeTracking,
     "WorkflowRules": WorkflowRules,
     "GPTConfigurationManager": GPTConfigurationManager,
+    "Search": Search,
 }
 
 export const pagesConfig = {
