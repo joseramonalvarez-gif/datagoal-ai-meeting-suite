@@ -64,6 +64,7 @@ import TimeTracking from './pages/TimeTracking';
 import WorkflowRules from './pages/WorkflowRules';
 import GPTConfigurationManager from './pages/GPTConfigurationManager';
 import Search from './pages/Search';
+import AgentsWhatsApp from './pages/AgentsWhatsApp';
 import __Layout from './Layout.jsx';
 
 
@@ -85,6 +86,7 @@ export const PAGES = {
     "WorkflowRules": WorkflowRules,
     "GPTConfigurationManager": GPTConfigurationManager,
     "Search": Search,
+    "AgentsWhatsApp": AgentsWhatsApp,
 }
 
 export const pagesConfig = {
