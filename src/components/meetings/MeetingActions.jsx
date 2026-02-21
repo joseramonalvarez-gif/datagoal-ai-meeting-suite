@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Upload, FileText, Mic, Brain, ListChecks, Mail, Loader2, Settings2, Video, AlertCircle } from "lucide-react";
 import ReportTemplateManager from "./ReportTemplateManager";
+import SummaryGenerator from "./SummaryGenerator";
 import { toast } from "sonner";
 import { notifyTaskAssigned } from "../tasks/taskNotifications";
 
@@ -39,6 +40,15 @@ export default function MeetingActions({ meeting, onUpdate }) {
   const [gmeetText, setGmeetText] = useState("");
   const [gmeetUrl, setGmeetUrl] = useState("");
   const [gmeetProcessing, setGmeetProcessing] = useState(false);
+  const [transcript, setTranscript] = useState(null);
+
+  useEffect(() => {
+    if (["transcribed", "report_generated", "approved", "closed"].includes(meeting?.status)) {
+      base44.entities.Transcript.filter({ meeting_id: meeting.id }, '-version', 1).then(ts => {
+        if (ts[0]) setTranscript(ts[0]);
+      });
+    }
+  }, [meeting?.id, meeting?.status]);
 
   const isTranscribed = ["transcribed", "report_generated", "approved", "closed"].includes(meeting?.status);
 
@@ -541,6 +551,7 @@ ${report.content_markdown?.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>').r
           <ActionButton icon={ListChecks} label="Extraer tareas" onClick={handleExtractTasks} action="tasks"
             disabled={!isTranscribed} title={!isTranscribed ? "Requiere transcripción completada" : undefined} />
           <ActionButton icon={Mail} label="Enviar informe" onClick={handleSendEmail} action="email" />
+          {transcript && <SummaryGenerator meeting={meeting} transcript={transcript} />}
           <Button onClick={() => setShowTemplates(true)} variant="ghost" size="sm" className="gap-2 text-xs text-[#3E4C59]">
             <Settings2 className="w-4 h-4" /> Plantillas
           </Button>
