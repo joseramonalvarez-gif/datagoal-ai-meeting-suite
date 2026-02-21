@@ -68,6 +68,7 @@ import WorkflowRules from './pages/WorkflowRules';
 import AgentsHub from './pages/AgentsHub';
 import KnowledgeHub from './pages/KnowledgeHub';
 import AutomationRuns from './pages/AutomationRuns';
+import MonitoringDashboard from './pages/MonitoringDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -93,6 +94,7 @@ export const PAGES = {
     "AgentsHub": AgentsHub,
     "KnowledgeHub": KnowledgeHub,
     "AutomationRuns": AutomationRuns,
+    "MonitoringDashboard": MonitoringDashboard,
 }
 
 export const pagesConfig = {

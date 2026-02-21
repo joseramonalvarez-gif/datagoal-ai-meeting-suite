@@ -6,7 +6,7 @@ import { canManageGPT } from "./components/utils/roleUtils";
 import {
         LayoutDashboard, Calendar, Clock, FolderTree, Shield, Users,
         FileText, CheckSquare, MessageSquare, Flag,
-        Search, Bell, ChevronDown, Menu, X, LogOut, FlaskConical, Zap, MessageCircle
+        Search, Bell, ChevronDown, Menu, X, LogOut, FlaskConical, Zap, MessageCircle, Activity
       } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ const NAV_ITEMS = [
   { name: "Clientes", icon: FolderTree, page: "Clients" },
   { name: "Proyectos", icon: FolderTree, page: "Projects" },
   { name: "Notificaciones", icon: Bell, page: "Notifications" },
+  { name: "Monitoreo", icon: Activity, page: "MonitoringDashboard" },
   { name: "Auditoría", icon: Shield, page: "AuditLog" },
   { name: "QA Center", icon: FlaskConical, page: "QAControlCenter" },
   { name: "Agentes WhatsApp", icon: MessageCircle, page: "AgentsHub" },
