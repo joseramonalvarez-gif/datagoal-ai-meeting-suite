@@ -124,6 +124,15 @@ export default function Dashboard({ selectedClient }) {
         </div>
       </div>
 
+      {/* Gantt */}
+      <GanttChart projects={projects} />
+
+      {/* Health + Milestones */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ProjectHealthCard projects={projects} tasks={tasks} milestones={milestones} />
+        <MilestonesPanel milestones={milestones} projects={projects} />
+      </div>
+
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RecentActivity items={recentActivity} />
