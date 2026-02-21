@@ -8,14 +8,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, Shield, Mail, Plus, Edit2, Trash2 } from 'lucide-react';
+import { Users, Shield, Mail, Plus, Edit2, Trash2, FolderTree } from 'lucide-react';
 
 export default function AdminPanel() {
   const queryClient = useQueryClient();
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('consultant');
   const [editingUser, setEditingUser] = useState(null);
-  const [permissionForm, setPermissionForm] = useState({});
+  const [selectedScope, setSelectedScope] = useState(null);
+  const [permissionForm, setPermissionForm] = useState({
+    client_id: null,
+    project_id: null,
+    permissions: {}
+  });
 
   const { data: users = [] } = useQuery({
     queryKey: ['users'],
@@ -25,6 +30,16 @@ export default function AdminPanel() {
   const { data: permissions = [] } = useQuery({
     queryKey: ['permissions'],
     queryFn: () => base44.asServiceRole.entities.PermissionMatrix.list()
+  });
+
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients'],
+    queryFn: () => base44.entities.Client.list()
+  });
+
+  const { data: projects = [] } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => base44.entities.Project.list()
   });
 
   const inviteMutation = useMutation({
@@ -55,7 +70,10 @@ export default function AdminPanel() {
     await updatePermissionsMutation.mutateAsync({
       user_email: editingUser.email,
       role: permissionForm.role || editingUser.role,
-      permissions: permissionForm.permissions
+      client_id: permissionForm.client_id,
+      project_id: permissionForm.project_id,
+      permissions: permissionForm.permissions,
+      is_active: true
     });
   };
 
@@ -164,17 +182,81 @@ export default function AdminPanel() {
         {/* Permissions Tab */}
         <TabsContent value="permissions" className="space-y-4">
           {editingUser ? (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
+            <>
+              {/* Scope Selector */}
+              <Card className="bg-[#E8F5F4] border-[#33A19A]">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <FolderTree className="w-4 h-4" />
+                    Seleccionar Scope
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
                   <div>
-                    <CardTitle>{editingUser.full_name}</CardTitle>
-                    <CardDescription>{editingUser.email}</CardDescription>
+                    <label className="text-sm font-medium block mb-2">Cliente</label>
+                    <Select
+                      value={permissionForm.client_id || 'global'}
+                      onValueChange={(v) => setPermissionForm({
+                        ...permissionForm,
+                        client_id: v === 'global' ? null : v,
+                        project_id: null
+                      })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="global">Todos los clientes (Global)</SelectItem>
+                        {clients.map(c => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Button variant="outline" onClick={() => setEditingUser(null)}>Cerrar</Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
+
+                  {permissionForm.client_id && (
+                    <div>
+                      <label className="text-sm font-medium block mb-2">Proyecto (Opcional)</label>
+                      <Select
+                        value={permissionForm.project_id || 'all'}
+                        onValueChange={(v) => setPermissionForm({
+                          ...permissionForm,
+                          project_id: v === 'all' ? null : v
+                        })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos los proyectos</SelectItem>
+                          {projects
+                            .filter(p => p.client_id === permissionForm.client_id)
+                            .map(p => (
+                              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Permissions Editor */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>{editingUser.full_name}</CardTitle>
+                      <CardDescription>
+                        {permissionForm.client_id 
+                          ? clients.find(c => c.id === permissionForm.client_id)?.name 
+                          : 'Global'} {permissionForm.project_id && `/ ${projects.find(p => p.id === permissionForm.project_id)?.name}`}
+                      </CardDescription>
+                    </div>
+                    <Button variant="outline" onClick={() => setEditingUser(null)}>Cerrar</Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
                 <div>
                   <label className="text-sm font-medium block mb-2">Rol Base</label>
                   <Select
@@ -253,6 +335,8 @@ export default function AdminPanel() {
               </CardContent>
             </Card>
           )}
+        </>
+          )}
 
           {/* Matrix View */}
           <Card>
@@ -265,7 +349,9 @@ export default function AdminPanel() {
                   <tr className="border-b border-[#B7CAC9]/30">
                     <th className="text-left p-2 font-medium">Usuario</th>
                     <th className="text-left p-2 font-medium">Rol</th>
+                    <th className="text-left p-2 font-medium">Scope</th>
                     <th className="text-left p-2 font-medium">Permisos Activos</th>
+                    <th className="text-left p-2 font-medium">Estado</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -274,11 +360,27 @@ export default function AdminPanel() {
                       .flatMap(([section, perms]) => 
                         Object.entries(perms).filter(([_, v]) => v).map(([k]) => `${section}.${k}`)
                       );
+                    const clientName = perm.client_id 
+                      ? clients.find(c => c.id === perm.client_id)?.name 
+                      : 'Global';
+                    const projectName = perm.project_id
+                      ? projects.find(p => p.id === perm.project_id)?.name
+                      : '';
                     return (
                       <tr key={perm.id} className="border-b border-[#B7CAC9]/30">
                         <td className="p-2 text-[#1B2731]">{perm.user_email}</td>
                         <td className="p-2"><Badge variant="outline">{perm.role}</Badge></td>
+                        <td className="p-2 text-xs">
+                          {clientName} {projectName && `/ ${projectName}`}
+                        </td>
                         <td className="p-2 text-xs text-[#3E4C59]">{activePerms.length} permisos</td>
+                        <td className="p-2">
+                          {perm.is_active ? (
+                            <Badge className="bg-green-100 text-green-800">Activo</Badge>
+                          ) : (
+                            <Badge className="bg-gray-100 text-gray-800">Inactivo</Badge>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}

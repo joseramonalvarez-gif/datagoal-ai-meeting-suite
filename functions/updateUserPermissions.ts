@@ -1,104 +1,83 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * Update permissions for a user
+ * Update user permissions in PermissionMatrix
+ * Handles granular permissions by module/action and scope
  */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const admin = await base44.auth.me();
+    const user = await base44.auth.me();
 
-    if (!admin || admin.role !== 'admin') {
+    // Only admins can update permissions
+    if (!user || user.role !== 'admin') {
       return Response.json({ error: 'Admin only' }, { status: 403 });
     }
 
-    const { user_email, role, client_id, permissions } = await req.json();
+    const {
+      user_email,
+      role,
+      client_id = null,
+      project_id = null,
+      permissions = {},
+      is_active = true
+    } = await req.json();
 
-    if (!user_email || !role) {
-      return Response.json({ 
-        error: 'user_email and role required' 
-      }, { status: 400 });
-    }
+    console.log(`[updateUserPermissions] Updating permissions for ${user_email}`);
 
-    console.log(`[updateUserPermissions] Updating ${user_email} to role ${role}`);
+    // Check if permission matrix exists for this user+scope
+    const existing = await base44.asServiceRole.entities.PermissionMatrix.filter(
+      { user_email, client_id, project_id },
+      '-created_date',
+      1
+    );
 
-    // Check if permission matrix exists
-    let matrix = await base44.asServiceRole.entities.PermissionMatrix.filter(
-      { user_email, client_id: client_id || null }
-    ).then(r => r[0]);
-
-    if (matrix) {
-      // Update existing
-      matrix = await base44.asServiceRole.entities.PermissionMatrix.update(matrix.id, {
+    let result;
+    if (existing.length > 0) {
+      result = await base44.asServiceRole.entities.PermissionMatrix.update(existing[0].id, {
         role,
-        permissions: permissions || matrix.permissions,
-        is_active: true
+        permissions,
+        is_active
       });
     } else {
-      // Create new
-      matrix = await base44.asServiceRole.entities.PermissionMatrix.create({
+      result = await base44.asServiceRole.entities.PermissionMatrix.create({
         user_email,
         role,
-        client_id: client_id || null,
-        permissions: permissions || getDefaultPermissions(role),
-        is_active: true,
-        created_by: admin.email
+        client_id,
+        project_id,
+        permissions,
+        is_active,
+        created_by: user.email
       });
     }
 
-    // Log to audit
+    // Log to audit trail
     await base44.asServiceRole.entities.AuditLog.create({
-      action: 'permission_updated',
-      actor_email: admin.email,
-      target_email: user_email,
-      changes: { role, client_id, permissions },
-      timestamp: new Date().toISOString()
+      action: 'permission_changed',
+      entity_type: 'PermissionMatrix',
+      entity_id: result.id,
+      actor_email: user.email,
+      actor_name: user.full_name,
+      severity: 'warning',
+      changes: {
+        user_email,
+        role,
+        scope: { client_id, project_id },
+        permissions: Object.keys(permissions).length
+      }
     }).catch(() => {});
+
+    console.log(`[updateUserPermissions] Permissions updated for ${user_email}`);
 
     return Response.json({
       success: true,
-      matrix: matrix
+      permission_id: result.id,
+      user_email,
+      role
     });
 
   } catch (error) {
     console.error('[updateUserPermissions] Error:', error);
-    return Response.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    return Response.json({ error: error.message }, { status: 500 });
   }
 });
-
-function getDefaultPermissions(role) {
-  const templates = {
-    admin: {
-      meetings: { create: true, edit: true, delete: true, view_all: true },
-      tasks: { create: true, edit: true, assign: true, delete: true, view_all: true },
-      reports: { generate: true, approve: true, send: true, view_all: true },
-      analytics: { view: true, export: true },
-      admin: { manage_users: true, manage_permissions: true, view_audit: true, manage_settings: true }
-    },
-    analyst: {
-      meetings: { create: true, edit: true, delete: false, view_all: true },
-      tasks: { create: true, edit: true, assign: true, delete: false, view_all: true },
-      reports: { generate: true, approve: false, send: true, view_all: true },
-      analytics: { view: true, export: true },
-      admin: { manage_users: false, manage_permissions: false, view_audit: false, manage_settings: false }
-    },
-    consultant: {
-      meetings: { create: true, edit: true, delete: false, view_all: false },
-      tasks: { create: true, edit: true, assign: false, delete: false, view_all: false },
-      reports: { generate: true, approve: false, send: false, view_all: false },
-      analytics: { view: true, export: false },
-      admin: { manage_users: false, manage_permissions: false, view_audit: false, manage_settings: false }
-    },
-    viewer: {
-      meetings: { create: false, edit: false, delete: false, view_all: true },
-      tasks: { create: false, edit: false, assign: false, delete: false, view_all: true },
-      reports: { generate: false, approve: false, send: false, view_all: true },
-      analytics: { view: true, export: false },
-      admin: { manage_users: false, manage_permissions: false, view_audit: false, manage_settings: false }
-    }
-  };
-  return templates[role] || templates.viewer;
-}
