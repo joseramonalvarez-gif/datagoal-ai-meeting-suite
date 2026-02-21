@@ -77,6 +77,7 @@ import DeliverySettings from './pages/DeliverySettings';
 import DeliveryActivityLog from './pages/DeliveryActivityLog';
 import DeliveryAlertsManager from './pages/DeliveryAlertsManager';
 import DeliveryWebhooksManager from './pages/DeliveryWebhooksManager';
+import ExecutiveDashboard from './pages/ExecutiveDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -111,6 +112,7 @@ export const PAGES = {
     "DeliveryActivityLog": DeliveryActivityLog,
     "DeliveryAlertsManager": DeliveryAlertsManager,
     "DeliveryWebhooksManager": DeliveryWebhooksManager,
+    "ExecutiveDashboard": ExecutiveDashboard,
 }
 
 export const pagesConfig = {

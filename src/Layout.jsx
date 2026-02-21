@@ -40,6 +40,7 @@ const NAV_ITEMS = [
   { name: "GPT Config", icon: Zap, page: "GPTConfigurationManager" },
   { name: "Prompts", icon: FileText, page: "PromptTemplateManager" },
   { name: "Templates", icon: FileText, page: "ReportTemplateManager" },
+  { name: "Executive Dashboard", icon: TrendingUp, page: "ExecutiveDashboard" },
   { name: "Delivery Analytics", icon: TrendingUp, page: "DeliveryAnalytics" },
   { name: "Delivery Activity", icon: Activity, page: "DeliveryActivityLog" },
   { name: "Delivery Alerts", icon: Bell, page: "DeliveryAlertsManager" },
