@@ -51,6 +51,7 @@ const NAV_ITEMS = [
   { name: "BigQuery Custom", icon: TrendingUp, page: "BigQueryCustom" },
   { name: "Consultas Guardadas", icon: Zap, page: "SavedQueriesManager" },
   { name: "Reportes Personalizados", icon: TrendingUp, page: "CustomReportsBuilder" },
+  { name: "Gestión Permisos", icon: Shield, page: "PermissionManager" },
   ];
 
 export default function Layout({ children, currentPageName }) {
