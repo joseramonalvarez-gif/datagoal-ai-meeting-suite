@@ -282,17 +282,16 @@ The document is a meeting transcript or recording transcript.
 
     let rawText = gmeetText.trim();
 
-    // If URL provided instead of text, fetch content via LLM
+    // If URL provided instead of text, fetch from Google Drive using connector
     if (!rawText && gmeetUrl.trim()) {
-      const fetched = await base44.integrations.Core.InvokeLLM({
-        prompt: `Fetch and return the complete transcript text from this URL: ${gmeetUrl}. Return only the transcript content as plain text.`,
-        add_context_from_internet: true,
-        response_json_schema: {
-          type: "object",
-          properties: { transcript_text: { type: "string" } }
-        }
-      });
-      rawText = fetched?.transcript_text || "";
+      try {
+        const { data } = await base44.functions.invoke('fetchGoogleDriveFile', { url: gmeetUrl });
+        rawText = data?.content || "";
+      } catch (err) {
+        toast.error("Error al acceder a Google Drive. Asegúrate de que el enlace sea válido y accesible.");
+        setGmeetProcessing(false);
+        return;
+      }
     }
 
     if (!rawText) {
@@ -367,69 +366,76 @@ ${rawText}`,
 
   // ─── Generate Report ─────────────────────────────────────────────────────────
   const handleGenerateReport = async () => {
-    setProcessing("report");
-    const [transcripts, existingTasks, templates] = await Promise.all([
-      base44.entities.Transcript.filter({ meeting_id: meeting.id }, '-version', 1),
-      base44.entities.Task.filter({ meeting_id: meeting.id }, '-created_date'),
-      base44.entities.ReportTemplate.filter({ is_active: true }),
-    ]);
-    const transcript = transcripts[0];
-    if (!transcript) {
-      toast.error("No hay transcripción disponible");
-      setProcessing(null);
-      return;
-    }
+   setProcessing("report");
+   const [transcripts, existingTasks, templates, gptConfigs] = await Promise.all([
+     base44.entities.Transcript.filter({ meeting_id: meeting.id }, '-version', 1),
+     base44.entities.Task.filter({ meeting_id: meeting.id }, '-created_date'),
+     base44.entities.ReportTemplate.filter({ is_active: true }),
+     base44.entities.GPTConfiguration.filter({ is_active: true }),
+   ]);
+   const transcript = transcripts[0];
+   if (!transcript) {
+     toast.error("No hay transcripción disponible");
+     setProcessing(null);
+     return;
+   }
 
-    const transcriptText = transcript.full_text ||
-      transcript.segments?.map(s => `${s.start_time || ""} | ${s.speaker_label || ""}: ${s.text_literal || ""}`).join("\n") || "";
+   const transcriptText = transcript.full_text ||
+     transcript.segments?.map(s => `${s.start_time || ""} | ${s.speaker_label || ""}: ${s.text_literal || ""}`).join("\n") || "";
 
-    const template = templates.find(t => t.is_default) || templates[0];
-    const tone = template?.tone || "ejecutivo";
-    const sections = template?.sections?.filter(s => s.enabled) || [];
+   const template = templates.find(t => t.is_default) || templates[0];
+   const tone = template?.tone || "ejecutivo";
+   const sections = template?.sections?.filter(s => s.enabled) || [];
 
-    const sectionList = sections.length
-      ? sections.map((s, i) => `${i + 1}. ${s.title}${s.prompt_hint ? ` — ${s.prompt_hint}` : ""}`).join("\n")
-      : `1. INFORMACIÓN GENERAL\n2. OBJETIVO Y CONTEXTO\n3. TEMAS TRATADOS\n4. ACUERDOS Y DECISIONES\n5. ACCIONES COMPROMETIDAS\n6. ELEMENTOS ABIERTOS\n7. PRÓXIMOS PASOS\n8. OBSERVACIONES DEL CONSULTOR`;
+   const sectionList = sections.length
+     ? sections.map((s, i) => `${i + 1}. ${s.title}${s.prompt_hint ? ` — ${s.prompt_hint}` : ""}`).join("\n")
+     : `1. INFORMACIÓN GENERAL\n2. OBJETIVO Y CONTEXTO\n3. TEMAS TRATADOS\n4. ACUERDOS Y DECISIONES\n5. ACCIONES COMPROMETIDAS\n6. ELEMENTOS ABIERTOS\n7. PRÓXIMOS PASOS\n8. OBSERVACIONES DEL CONSULTOR`;
 
-    const taskSummary = (template?.include_task_summary !== false) && existingTasks.length > 0
-      ? `\n\nTAREAS YA CREADAS EN EL SISTEMA:\n${existingTasks.map(t => `- [${t.status}] ${t.title} — ${t.assignee_name || "Sin asignar"} — ${t.due_date || "Sin fecha"}`).join("\n")}`
-      : "";
+   const taskSummary = (template?.include_task_summary !== false) && existingTasks.length > 0
+     ? `\n\nTAREAS YA CREADAS EN EL SISTEMA:\n${existingTasks.map(t => `- [${t.status}] ${t.title} — ${t.assignee_name || "Sin asignar"} — ${t.due_date || "Sin fecha"}`).join("\n")}`
+     : "";
 
-    const PROMPT = `Actúa como un consultor senior. Genera un informe profesional de reunión con tono ${tone}.
-Secciones requeridas:
-${sectionList}
+   // Use custom GPT config or fallback to default
+   const reportConfig = gptConfigs.find(g => g.output_type === "strategic_analysis") || gptConfigs[0];
+   const systemPrompt = reportConfig?.system_prompt || "Eres un consultor senior experto en análisis de reuniones de negocio. Genera informes profesionales, exhaustivos y accionables.";
 
-Reunión: ${meeting.title}
-Fecha: ${meeting.date}
-Participantes: ${meeting.participants?.map(p => `${p.name} (${p.email})`).join(", ") || "No especificados"}
-Objetivo: ${meeting.objective || "No especificado"}
-${taskSummary}
+   const PROMPT = `Actúa como un consultor senior. Genera un informe profesional de reunión con tono ${tone}.
+  Secciones requeridas:
+  ${sectionList}
 
-TRANSCRIPCIÓN:
-${transcriptText}
+  Reunión: ${meeting.title}
+  Fecha: ${meeting.date}
+  Participantes: ${meeting.participants?.map(p => `${p.name} (${p.email})`).join(", ") || "No especificados"}
+  Objetivo: ${meeting.objective || "No especificado"}
+  ${taskSummary}
 
-Genera el informe completo en Markdown, en español. Encabezados con ##. Tono ${tone}. Sé exhaustivo y accionable.`;
+  TRANSCRIPCIÓN:
+  ${transcriptText}
 
-    const result = await base44.integrations.Core.InvokeLLM({ prompt: PROMPT });
+  Genera el informe completo en Markdown, en español. Encabezados con ##. Tono ${tone}. Sé exhaustivo y accionable.`;
 
-    const existingReports = await base44.entities.Report.filter({ meeting_id: meeting.id });
-    await base44.entities.Report.create({
-      meeting_id: meeting.id,
-      client_id: meeting.client_id,
-      project_id: meeting.project_id,
-      transcript_id: transcript.id,
-      template_id: template?.id || "",
-      version: existingReports.length + 1,
-      title: `Informe: ${meeting.title}`,
-      content_markdown: result,
-      status: "generated",
-      ai_metadata: { model: "gemini", prompt_version: "v2", generated_at: new Date().toISOString(), template_name: template?.name || "default" }
-    });
+   const result = await base44.integrations.Core.InvokeLLM({ 
+     prompt: PROMPT,
+   });
 
-    await base44.entities.Meeting.update(meeting.id, { status: "report_generated" });
-    toast.success("✅ Informe generado correctamente");
-    setProcessing(null);
-    onUpdate();
+   const existingReports = await base44.entities.Report.filter({ meeting_id: meeting.id });
+   await base44.entities.Report.create({
+     meeting_id: meeting.id,
+     client_id: meeting.client_id,
+     project_id: meeting.project_id,
+     transcript_id: transcript.id,
+     template_id: template?.id || "",
+     version: existingReports.length + 1,
+     title: `Informe: ${meeting.title}`,
+     content_markdown: result,
+     status: "generated",
+     ai_metadata: { model: reportConfig?.model_name || "gpt-4-turbo", prompt_version: "v3", generated_at: new Date().toISOString(), template_name: template?.name || "default", gpt_config_id: reportConfig?.id }
+   });
+
+   await base44.entities.Meeting.update(meeting.id, { status: "report_generated" });
+   toast.success("✅ Informe generado correctamente");
+   setProcessing(null);
+   onUpdate();
   };
 
   // ─── Extract Tasks ────────────────────────────────────────────────────────────
