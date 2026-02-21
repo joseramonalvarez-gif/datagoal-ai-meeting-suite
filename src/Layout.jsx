@@ -16,12 +16,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 const NAV_ITEMS = [
-  { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
-  { name: "Reuniones", icon: Users, page: "Meetings" },
-  { name: "Tareas", icon: CheckSquare, page: "Tasks" },
-  { name: "Documentos", icon: FileText, page: "Documents" },
-  { name: "Calendario", icon: Calendar, page: "CalendarView" },
-  { name: "Búsqueda", icon: Search, page: "Search" },
+        { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
+        { name: "Reuniones", icon: Users, page: "Meetings" },
+        { name: "Tareas", icon: CheckSquare, page: "Tasks" },
+        { name: "Documentos", icon: FileText, page: "Documents" },
+        { name: "Conocimiento", icon: Zap, page: "KnowledgeHub" },
+        { name: "Calendario", icon: Calendar, page: "CalendarView" },
+        { name: "Búsqueda", icon: Search, page: "Search" },
   { name: "Registro Horas", icon: Clock, page: "TimeTracking" },
   { name: "Chat", icon: MessageSquare, page: "Chat" },
   { name: "Hitos", icon: Flag, page: "Milestones" },
