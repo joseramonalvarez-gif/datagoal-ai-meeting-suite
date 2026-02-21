@@ -61,7 +61,6 @@ import Projects from './pages/Projects';
 import QAControlCenter from './pages/QAControlCenter';
 import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
-import WorkflowRules from './pages/WorkflowRules';
 import __Layout from './Layout.jsx';
 
 
@@ -80,7 +79,6 @@ export const PAGES = {
     "QAControlCenter": QAControlCenter,
     "Tasks": Tasks,
     "TimeTracking": TimeTracking,
-    "WorkflowRules": WorkflowRules,
 }
 
 export const pagesConfig = {
