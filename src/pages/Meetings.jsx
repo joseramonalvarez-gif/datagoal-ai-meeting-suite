@@ -98,6 +98,12 @@ export default function Meetings({ selectedClient }) {
             </div>
           )}
 
+          {/* Calendar link */}
+          <div className="border-t border-[#B7CAC9]/20 pt-4">
+            <h4 className="text-xs font-semibold text-[#3E4C59] uppercase tracking-wider mb-2">Calendario</h4>
+            <MeetingCalendarLink meeting={selectedMeeting} />
+          </div>
+
           {/* Actions */}
           <div className="border-t border-[#B7CAC9]/20 pt-4">
             <h4 className="text-xs font-semibold text-[#3E4C59] uppercase tracking-wider mb-3">Acciones</h4>
@@ -107,9 +113,15 @@ export default function Meetings({ selectedClient }) {
               loadData();
             }} />
           </div>
+
+          {/* Minutes */}
+          <div className="border-t border-[#B7CAC9]/20 pt-4">
+            <h4 className="text-xs font-semibold text-[#3E4C59] uppercase tracking-wider mb-2">Acta de reunión</h4>
+            <MeetingMinutes meeting={selectedMeeting} />
+          </div>
         </div>
 
-        {/* Tabs: Transcript & Report */}
+        {/* Tabs: Transcript, Report, Attachments */}
         <Tabs defaultValue="transcript" className="bg-white rounded-xl border border-[#B7CAC9]/20">
           <TabsList className="w-full border-b border-[#B7CAC9]/20 bg-transparent p-0 h-auto">
             <TabsTrigger value="transcript" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#33A19A] data-[state=active]:bg-transparent px-6 py-3">
@@ -118,12 +130,18 @@ export default function Meetings({ selectedClient }) {
             <TabsTrigger value="report" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#33A19A] data-[state=active]:bg-transparent px-6 py-3">
               <Brain className="w-4 h-4 mr-2" /> Informe
             </TabsTrigger>
+            <TabsTrigger value="attachments" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#33A19A] data-[state=active]:bg-transparent px-6 py-3">
+              <Paperclip className="w-4 h-4 mr-2" /> Documentos
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="transcript" className="p-6">
             <TranscriptViewer meetingId={selectedMeeting.id} />
           </TabsContent>
           <TabsContent value="report" className="p-6">
             <ReportViewer meetingId={selectedMeeting.id} />
+          </TabsContent>
+          <TabsContent value="attachments" className="p-6">
+            <MeetingAttachments meeting={selectedMeeting} />
           </TabsContent>
         </Tabs>
       </div>
