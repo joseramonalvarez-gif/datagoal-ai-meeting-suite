@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import KanbanBoard from "../components/tasks/KanbanBoard";
-import TaskDetail from "../components/tasks/TaskDetail";
+import TaskDetail from "../components/tasks/TaskDetail.jsx";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
