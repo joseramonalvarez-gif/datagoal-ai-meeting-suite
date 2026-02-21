@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, Lightbulb, Target, TrendingUp, Loader, AlertTriangle, CheckCircle } from 'lucide-react';
+import { AlertCircle, Lightbulb, Target, TrendingUp, Loader, AlertTriangle, CheckCircle, FileText } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const severityColors = {
   low: 'bg-blue-100 text-blue-800',
@@ -24,10 +25,17 @@ const priorityColors = {
   high: 'bg-red-100 text-red-800',
 };
 
+const GPT_MODELS = {
+  pakito_mckensey: { label: 'Pakito McKensey', description: 'Análisis estratégico' },
+  copywriter_data_goal: { label: 'COPYWRITER DATA GOAL', description: 'Copys y artículos' }
+};
+
 export default function MeetingInsightsViewer({ transcriptId, meetingId }) {
   const [insights, setInsights] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedModels, setSelectedModels] = useState(['pakito_mckensey', 'copywriter_data_goal']);
+  const [showModelSelector, setShowModelSelector] = useState(false);
 
   useEffect(() => {
     loadInsights();
@@ -55,6 +63,7 @@ export default function MeetingInsightsViewer({ transcriptId, meetingId }) {
     try {
       setLoading(true);
       setError(null);
+      setShowModelSelector(false);
 
       // Get transcript data
       const transcript = await base44.entities.Transcript.filter({
@@ -68,13 +77,14 @@ export default function MeetingInsightsViewer({ transcriptId, meetingId }) {
 
       const t = transcript[0];
 
-      // Call analysis function
-      const response = await base44.functions.invoke('analyzeMeetingTranscript', {
+      // Call analysis function with selected models
+      const response = await base44.functions.invoke('analyzeMeetingTranscriptMulti', {
         transcript_id: transcriptId,
         meeting_id: meetingId,
         client_id: t.client_id,
         project_id: t.project_id,
         full_text: t.full_text,
+        selected_models: selectedModels,
       });
 
       if (response.data.success) {
@@ -90,6 +100,16 @@ export default function MeetingInsightsViewer({ transcriptId, meetingId }) {
     }
   };
 
+  const toggleModel = (modelKey) => {
+    setSelectedModels(prev => {
+      if (prev.includes(modelKey)) {
+        return prev.filter(m => m !== modelKey);
+      } else {
+        return [...prev, modelKey];
+      }
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -101,13 +121,49 @@ export default function MeetingInsightsViewer({ transcriptId, meetingId }) {
   if (!insights) {
     return (
       <div className="text-center py-12">
-        <p className="text-[#3E4C59] mb-4">No hay análisis disponible para esta transcripción</p>
-        <button
-          onClick={analyzeTranscript}
-          className="px-4 py-2 bg-[#33A19A] text-white rounded-lg hover:bg-[#2A857F]"
-        >
-          Analizar transcripción
-        </button>
+        <p className="text-[#3E4C59] mb-6">No hay análisis disponible para esta transcripción</p>
+        
+        {!showModelSelector ? (
+          <button
+            onClick={() => setShowModelSelector(true)}
+            className="px-4 py-2 bg-[#33A19A] text-white rounded-lg hover:bg-[#2A857F]"
+          >
+            Analizar con GPTs
+          </button>
+        ) : (
+          <Card className="p-6 border-[#B7CAC9]/30 max-w-md mx-auto">
+            <h3 className="font-semibold text-[#1B2731] mb-4">Selecciona GPTs a usar:</h3>
+            <div className="space-y-3 mb-6">
+              {Object.entries(GPT_MODELS).map(([key, model]) => (
+                <label key={key} className="flex items-center gap-3 p-3 border border-[#B7CAC9]/20 rounded-lg cursor-pointer hover:bg-[#FFFAF3]">
+                  <Checkbox
+                    checked={selectedModels.includes(key)}
+                    onCheckedChange={() => toggleModel(key)}
+                  />
+                  <div className="text-left flex-1">
+                    <p className="font-medium text-[#1B2731]">{model.label}</p>
+                    <p className="text-xs text-[#3E4C59]">{model.description}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowModelSelector(false)}
+                className="flex-1 px-4 py-2 border border-[#B7CAC9] text-[#1B2731] rounded-lg hover:bg-[#FFFAF3]"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={analyzeTranscript}
+                disabled={selectedModels.length === 0}
+                className="flex-1 px-4 py-2 bg-[#33A19A] text-white rounded-lg hover:bg-[#2A857F] disabled:opacity-50"
+              >
+                Analizar
+              </button>
+            </div>
+          </Card>
+        )}
       </div>
     );
   }
@@ -176,7 +232,7 @@ export default function MeetingInsightsViewer({ transcriptId, meetingId }) {
 
       {/* Insights Tabs */}
       <Tabs defaultValue="risks" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="risks" className="gap-2">
             <AlertCircle className="w-4 h-4" /> Riesgos
           </TabsTrigger>
@@ -186,6 +242,11 @@ export default function MeetingInsightsViewer({ transcriptId, meetingId }) {
           <TabsTrigger value="recommendations" className="gap-2">
             <Target className="w-4 h-4" /> Recomendaciones
           </TabsTrigger>
+          {insights.copy_content && (
+            <TabsTrigger value="copy" className="gap-2">
+              <FileText className="w-4 h-4" /> Copys
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {/* Risks */}
@@ -240,7 +301,14 @@ export default function MeetingInsightsViewer({ transcriptId, meetingId }) {
             insights.strategic_recommendations.map((rec, idx) => (
               <Card key={idx} className="p-5 border-[#B7CAC9]/30 hover:border-[#33A19A]/50 transition-colors">
                 <div className="flex items-start justify-between gap-4 mb-3">
-                  <h4 className="font-semibold text-[#1B2731]">{rec.title}</h4>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-[#1B2731]">{rec.title}</h4>
+                    {rec.source_model && (
+                      <p className="text-xs text-[#B7CAC9] mt-1">
+                        Fuente: {GPT_MODELS[rec.source_model]?.label}
+                      </p>
+                    )}
+                  </div>
                   <Badge className={`${priorityColors[rec.priority]} flex-shrink-0`}>
                     {rec.priority === 'low' ? 'Baja' : rec.priority === 'medium' ? 'Media' : 'Alta'}
                   </Badge>
@@ -256,6 +324,47 @@ export default function MeetingInsightsViewer({ transcriptId, meetingId }) {
             <p className="text-[#3E4C59] text-center py-8">No hay recomendaciones disponibles</p>
           )}
         </TabsContent>
+
+        {/* Copy Content Tab */}
+        {insights.copy_content && (
+          <TabsContent value="copy" className="space-y-4 mt-4">
+            <div className="space-y-6">
+              {/* Sales Copy */}
+              <Card className="p-5 border-[#B7CAC9]/30">
+                <h4 className="font-semibold text-[#1B2731] mb-3">Copy de Venta</h4>
+                <div className="bg-[#FFFAF3] p-4 rounded border border-[#B7CAC9]/20">
+                  <p className="text-sm text-[#3E4C59] whitespace-pre-wrap">
+                    {insights.copy_content.sales_copy}
+                  </p>
+                </div>
+              </Card>
+
+              {/* Articles */}
+              {insights.copy_content.articles && insights.copy_content.articles.length > 0 && (
+                <div>
+                  <h4 className="font-semibold text-[#1B2731] mb-3">Ideas de Artículos</h4>
+                  <div className="space-y-3">
+                    {insights.copy_content.articles.map((article, idx) => (
+                      <Card key={idx} className="p-4 border-[#B7CAC9]/30">
+                        <h5 className="font-semibold text-[#1B2731] mb-2">{article.title}</h5>
+                        <p className="text-sm text-[#3E4C59] mb-3">{article.description}</p>
+                        {article.keywords && (
+                          <div className="flex flex-wrap gap-2">
+                            {article.keywords.map((kw, kidx) => (
+                              <Badge key={kidx} variant="outline" className="text-xs">
+                                {kw}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        )}
       </Tabs>
 
       {insights.analysis_date && (
