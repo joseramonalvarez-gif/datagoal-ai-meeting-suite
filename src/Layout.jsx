@@ -31,6 +31,7 @@ const NAV_ITEMS = [
   { name: "Proyectos", icon: FolderTree, page: "Projects" },
   { name: "Notificaciones", icon: Bell, page: "Notifications" },
   { name: "Monitoreo", icon: Activity, page: "MonitoringDashboard" },
+  { name: "Administración", icon: Shield, page: "AdminPanel" },
   { name: "Auditoría", icon: Shield, page: "AuditLog" },
   { name: "QA Center", icon: FlaskConical, page: "QAControlCenter" },
   { name: "Agentes WhatsApp", icon: MessageCircle, page: "AgentsHub" },
