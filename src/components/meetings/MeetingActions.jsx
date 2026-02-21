@@ -44,41 +44,38 @@ export default function MeetingActions({ meeting, onUpdate }) {
 
   // ─── Core transcription logic ───────────────────────────────────────────────
   const doTranscribeFromUrl = async (audioUrl, meetingId, clientId, projectId) => {
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `You are a professional transcription service. Transcribe this audio file COMPLETELY and LITERALLY.
-- Identify all different speakers (label them Speaker 1, Speaker 2, etc. or by name if identifiable)
-- Provide timestamps in MM:SS format for each segment
-- Do NOT summarize or paraphrase — transcribe word for word
-- Include filler words, pauses noted as [pause], unclear parts as [inaudible]
-- Output language: keep the original language spoken
-
-Return JSON with:
-- segments: array of {start_time, end_time, speaker_id, speaker_label, text_literal}
-- full_text: complete transcript as plain text`,
-      file_urls: [audioUrl],
-      response_json_schema: {
+    // Use ExtractDataFromUploadedFile which supports audio files (mp3, wav, m4a, etc.)
+    const extracted = await base44.integrations.Core.ExtractDataFromUploadedFile({
+      file_url: audioUrl,
+      json_schema: {
         type: "object",
         properties: {
           segments: {
             type: "array",
+            description: "Transcription segments with speaker and timestamp info",
             items: {
               type: "object",
               properties: {
-                start_time: { type: "string" },
+                start_time: { type: "string", description: "Timestamp MM:SS" },
                 end_time: { type: "string" },
                 speaker_id: { type: "string" },
-                speaker_label: { type: "string" },
-                text_literal: { type: "string" }
+                speaker_label: { type: "string", description: "Speaker 1, Speaker 2, or name if identifiable" },
+                text_literal: { type: "string", description: "Exact words spoken, word for word" }
               }
             }
           },
-          full_text: { type: "string" }
+          full_text: { type: "string", description: "Complete transcript as plain text" }
         }
       }
     });
 
+    if (extracted.status === "error") {
+      throw new Error(`Error al transcribir: ${extracted.details || "Formato de audio no compatible. Prueba con MP4 o WAV."}`);
+    }
+
+    const result = extracted.output;
     if (!result || (!result.full_text && (!result.segments || result.segments.length === 0))) {
-      throw new Error("La IA no pudo transcribir el audio. Verifica que el archivo tenga voz audible.");
+      throw new Error("No se pudo extraer texto del audio. Prueba subir el archivo en formato MP4 o WAV.");
     }
 
     const existingTranscripts = await base44.entities.Transcript.filter({ meeting_id: meetingId });
