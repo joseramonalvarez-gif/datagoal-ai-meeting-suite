@@ -158,7 +158,7 @@ export default function Meetings({ selectedClient }) {
             <TranscriptViewer meetingId={selectedMeeting.id} />
           </TabsContent>
           <TabsContent value="report" className="p-6">
-            <ReportViewer meetingId={selectedMeeting.id} />
+            <ReportViewer meetingId={selectedMeeting.id} meeting={selectedMeeting} />
           </TabsContent>
           <TabsContent value="attachments" className="p-6">
             <MeetingAttachments meeting={selectedMeeting} />
