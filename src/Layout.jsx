@@ -34,6 +34,7 @@ const NAV_ITEMS = [
   { name: "Administración", icon: Shield, page: "AdminPanel" },
   { name: "Compliance", icon: Shield, page: "ComplianceCenter" },
   { name: "Auditoría", icon: Shield, page: "AuditLog" },
+  { name: "Delivery Alerts", icon: Bell, page: "DeliveryAlertsManager" },
   { name: "QA Center", icon: FlaskConical, page: "QAControlCenter" },
   { name: "Agentes WhatsApp", icon: MessageCircle, page: "AgentsHub" },
   { name: "Notif. Config", icon: Bell, page: "NotificationSettings" },
