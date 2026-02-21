@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Clock, User, LinkIcon, ListTree, Link2, Paperclip } from "lucide-react";
+import { Clock, User, LinkIcon, ListTree, Link2, Paperclip, X } from "lucide-react";
 import TaskSubtasks from "./TaskSubtasks";
 import TaskDependencies from "./TaskDependencies";
 import TaskAttachmentsComments from "./TaskAttachmentsComments";
@@ -31,9 +31,9 @@ const PRIORITIES = [
 export default function TaskDetail({ task, open, onClose, onUpdate }) {
   const [form, setForm] = useState({
     title: "", description: "", status: "todo", priority: "medium",
-    assignee_email: "", assignee_name: "", due_date: "",
+    assignees: [], due_date: "",
   });
-  // Track local task state for sub-components that need refreshes
+  const [newAssignee, setNewAssignee] = useState({ email: "", name: "" });
   const [localTask, setLocalTask] = useState(task);
 
   useEffect(() => {
@@ -44,22 +44,34 @@ export default function TaskDetail({ task, open, onClose, onUpdate }) {
         description: task.description || "",
         status: task.status || "todo",
         priority: task.priority || "medium",
-        assignee_email: task.assignee_email || "",
-        assignee_name: task.assignee_name || "",
+        assignees: task.assignees || [],
         due_date: task.due_date || "",
       });
+      setNewAssignee({ email: "", name: "" });
     }
   }, [task]);
 
   const handleSave = async () => {
     const me = await base44.auth.me();
-    const prevAssignee = task.assignee_email;
+    const prevAssignees = task.assignees || [];
     await base44.entities.Task.update(task.id, form);
-    if (form.assignee_email && form.assignee_email !== prevAssignee) {
+    const newAssignees = form.assignees.filter(a => !prevAssignees.find(p => p.email === a.email));
+    for (const assignee of newAssignees) {
       await notifyTaskAssigned({ task: { ...task, ...form }, assignedBy: me.email });
     }
     onUpdate();
     onClose();
+  };
+
+  const addAssignee = () => {
+    if (!newAssignee.email.trim()) return;
+    if (form.assignees.find(a => a.email === newAssignee.email)) return;
+    setForm({ ...form, assignees: [...form.assignees, newAssignee] });
+    setNewAssignee({ email: "", name: "" });
+  };
+
+  const removeAssignee = (email) => {
+    setForm({ ...form, assignees: form.assignees.filter(a => a.email !== email) });
   };
 
   const refreshLocalTask = async () => {
@@ -104,16 +116,31 @@ export default function TaskDetail({ task, open, onClose, onUpdate }) {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm font-medium">Responsable</label>
-                <Input value={form.assignee_name} onChange={e => setForm({ ...form, assignee_name: e.target.value })} placeholder="Nombre" className="mt-1" />
-                <Input value={form.assignee_email} onChange={e => setForm({ ...form, assignee_email: e.target.value })} placeholder="Email" className="mt-1" />
+            <div>
+              <label className="text-sm font-medium">Responsables (múltiples)</label>
+              <div className="space-y-2 mt-1">
+                <div className="flex gap-2">
+                  <Input value={newAssignee.name} onChange={e => setNewAssignee({ ...newAssignee, name: e.target.value })} placeholder="Nombre" className="text-sm" />
+                  <Input value={newAssignee.email} onChange={e => setNewAssignee({ ...newAssignee, email: e.target.value })} placeholder="email@empresa.com" className="text-sm" />
+                  <Button size="sm" onClick={addAssignee} className="bg-[#33A19A] hover:bg-[#2A857F] text-white">+</Button>
+                </div>
+                {form.assignees.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {form.assignees.map(a => (
+                      <Badge key={a.email} className="bg-[#E8F5F4] text-[#33A19A] border-0 flex items-center gap-2">
+                        {a.name || a.email}
+                        <button onClick={() => removeAssignee(a.email)} className="ml-1 hover:opacity-70">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div>
-                <label className="text-sm font-medium">Fecha límite</label>
-                <Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} className="mt-1" />
-              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Fecha límite</label>
+              <Input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} className="mt-1" />
             </div>
 
             {/* Evidence */}
