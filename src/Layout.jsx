@@ -6,7 +6,7 @@ import { canManageGPT } from "./components/utils/roleUtils";
 import {
         LayoutDashboard, Calendar, Clock, FolderTree, Shield, Users,
         FileText, CheckSquare, MessageSquare, Flag,
-        Search, Bell, ChevronDown, Menu, X, LogOut, FlaskConical, Zap, MessageCircle, Activity
+        Search, Bell, ChevronDown, Menu, X, LogOut, FlaskConical, Zap, MessageCircle, Activity, TrendingUp
       } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,7 @@ const NAV_ITEMS = [
   { name: "GPT Config", icon: Zap, page: "GPTConfigurationManager" },
   { name: "Prompts", icon: FileText, page: "PromptTemplateManager" },
   { name: "Templates", icon: FileText, page: "ReportTemplateManager" },
+  { name: "Delivery Analytics", icon: TrendingUp, page: "DeliveryAnalytics" },
 ];
 
 export default function Layout({ children, currentPageName }) {
