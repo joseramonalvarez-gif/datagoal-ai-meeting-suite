@@ -5,7 +5,7 @@ import { base44 } from "@/api/base44Client";
 import {
   LayoutDashboard, Calendar, Clock, FolderTree, Shield, Users,
   FileText, CheckSquare, MessageSquare, FileCheck, Flag,
-  Search, Bell, ChevronDown, Menu, X, LogOut, Settings, FlaskConical
+  Search, Bell, ChevronDown, Menu, X, LogOut, Settings, FlaskConical, Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ const NAV_ITEMS = [
   { name: "Auditoría", icon: Shield, page: "AuditLog" },
   { name: "QA Center", icon: FlaskConical, page: "QAControlCenter" },
   { name: "Notif. Config", icon: Bell, page: "NotificationSettings" },
+  { name: "Automatizaciones", icon: Zap, page: "WorkflowRules" },
 ];
 
 export default function Layout({ children, currentPageName }) {

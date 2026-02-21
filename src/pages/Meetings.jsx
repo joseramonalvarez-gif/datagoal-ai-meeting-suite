@@ -14,6 +14,8 @@ import ReportViewer from "../components/meetings/ReportViewer";
 import MeetingCalendarLink from "../components/meetings/MeetingCalendarLink";
 import MeetingAttachments from "../components/meetings/MeetingAttachments";
 import MeetingMinutes from "../components/meetings/MeetingMinutes";
+import WorkflowEngine from "../components/meetings/WorkflowEngine";
+import ApprovalWorkflow from "../components/meetings/ApprovalWorkflow";
 
 const STATUS_LABELS = {
   scheduled: { label: "Programada", color: "bg-blue-50 text-blue-700" },
@@ -118,6 +120,24 @@ export default function Meetings({ selectedClient }) {
           <div className="border-t border-[#B7CAC9]/20 pt-4">
             <h4 className="text-xs font-semibold text-[#3E4C59] uppercase tracking-wider mb-2">Acta de reunión</h4>
             <MeetingMinutes meeting={selectedMeeting} />
+          </div>
+
+          {/* Workflows */}
+          <div className="border-t border-[#B7CAC9]/20 pt-4">
+            <WorkflowEngine meeting={selectedMeeting} onUpdate={async () => {
+              const updated = await base44.entities.Meeting.filter({ id: selectedMeeting.id });
+              if (updated[0]) setSelectedMeeting(updated[0]);
+              loadData();
+            }} />
+          </div>
+
+          {/* Approvals */}
+          <div className="border-t border-[#B7CAC9]/20 pt-4">
+            <ApprovalWorkflow meeting={selectedMeeting} onUpdate={async () => {
+              const updated = await base44.entities.Meeting.filter({ id: selectedMeeting.id });
+              if (updated[0]) setSelectedMeeting(updated[0]);
+              loadData();
+            }} />
           </div>
         </div>
 
