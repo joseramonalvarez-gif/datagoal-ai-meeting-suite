@@ -4,10 +4,10 @@ import { createPageUrl } from "./utils";
 import { base44 } from "@/api/base44Client";
 import { canManageGPT } from "./components/utils/roleUtils";
 import {
-  LayoutDashboard, Calendar, Clock, FolderTree, Shield, Users,
-  FileText, CheckSquare, MessageSquare, Flag,
-  Search, Bell, ChevronDown, Menu, X, LogOut, FlaskConical, Zap
-} from "lucide-react";
+        LayoutDashboard, Calendar, Clock, FolderTree, Shield, Users,
+        FileText, CheckSquare, MessageSquare, Flag,
+        Search, Bell, ChevronDown, Menu, X, LogOut, FlaskConical, Zap, MessageCircle
+      } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,9 +30,10 @@ const NAV_ITEMS = [
   { name: "Notificaciones", icon: Bell, page: "Notifications" },
   { name: "Auditoría", icon: Shield, page: "AuditLog" },
   { name: "QA Center", icon: FlaskConical, page: "QAControlCenter" },
-        { name: "Notif. Config", icon: Bell, page: "NotificationSettings" },
-        { name: "Automatizaciones", icon: Zap, page: "WorkflowRules" },
-        { name: "GPT Config", icon: Zap, page: "GPTConfigurationManager" },
+  { name: "Agentes WhatsApp", icon: MessageCircle, page: "AgentsHub" },
+  { name: "Notif. Config", icon: Bell, page: "NotificationSettings" },
+  { name: "Automatizaciones", icon: Zap, page: "WorkflowRules" },
+  { name: "GPT Config", icon: Zap, page: "GPTConfigurationManager" },
 ];
 
 export default function Layout({ children, currentPageName }) {
