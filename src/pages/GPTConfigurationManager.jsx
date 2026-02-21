@@ -139,6 +139,7 @@ export default function GPTConfigurationManager() {
           onDelete={handleDelete}
         />
       )}
-    </div>
+      </div>
+    </RoleGuard>
   );
 }
