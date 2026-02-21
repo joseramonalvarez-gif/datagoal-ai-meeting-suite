@@ -214,15 +214,29 @@ export async function runSmoke({ run, selectedClient, selectedProject, user, onP
 <hr>
 <p style="color:#3E4C59;font-size:12px">DATA GOAL QA Control Center — Mensaje automático de prueba</p>`;
 
+    const sent = [];
+    const failed = [];
     for (const email of emails) {
-      await base44.integrations.Core.SendEmail({
-        to: email,
-        subject: `[QA][SMOKE] ${run.run_id} — DATA GOAL Control Center`,
-        body,
-      });
+      try {
+        await base44.integrations.Core.SendEmail({
+          to: email,
+          subject: `[QA][SMOKE] ${run.run_id} — DATA GOAL Control Center`,
+          body,
+        });
+        sent.push(email);
+      } catch(emailErr) {
+        const msg = String(emailErr);
+        if (msg.includes("outside the app")) {
+          failed.push(`${email} (fuera del app)`);
+        } else {
+          throw emailErr;
+        }
+      }
     }
-    const ev = `recipients: ${emails.join(", ")}, config_id: ${cfg.id}, count: ${emails.length}`;
-    const c = await saveCheck(runId, "EMAIL-001", "Email de prueba (SMOKE)", "PASSED", ev, "", Date.now()-t4);
+    const ev = `sent: ${sent.join(", ") || "ninguno"}, skipped_outside_app: ${failed.join(", ") || "ninguno"}, config_id: ${cfg.id}`;
+    const checkStatus = sent.length > 0 ? "PASSED" : "SKIPPED";
+    const c = await saveCheck(runId, "EMAIL-001", "Email de prueba (SMOKE)", checkStatus, ev,
+      sent.length === 0 ? "Todos los destinatarios son externos al app (sin acceso a SendEmail). Invítalos al app para habilitar emails." : "", Date.now()-t4);
     checks.push(c);
   } catch(e) {
     const c = await saveCheck(runId, "EMAIL-001", "Email de prueba (SMOKE)", "FAILED", "", String(e), Date.now()-t4);
