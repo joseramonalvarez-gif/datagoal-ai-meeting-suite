@@ -75,6 +75,8 @@ import ReportTemplateManager from './pages/ReportTemplateManager';
 import DeliveryAnalytics from './pages/DeliveryAnalytics';
 import DeliverySettings from './pages/DeliverySettings';
 import DeliveryActivityLog from './pages/DeliveryActivityLog';
+import DeliveryAlertsManager from './pages/DeliveryAlertsManager';
+import DeliveryWebhooksManager from './pages/DeliveryWebhooksManager';
 import __Layout from './Layout.jsx';
 
 
@@ -107,6 +109,8 @@ export const PAGES = {
     "DeliveryAnalytics": DeliveryAnalytics,
     "DeliverySettings": DeliverySettings,
     "DeliveryActivityLog": DeliveryActivityLog,
+    "DeliveryAlertsManager": DeliveryAlertsManager,
+    "DeliveryWebhooksManager": DeliveryWebhooksManager,
 }
 
 export const pagesConfig = {

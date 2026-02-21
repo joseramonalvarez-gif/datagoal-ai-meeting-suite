@@ -42,6 +42,8 @@ const NAV_ITEMS = [
   { name: "Templates", icon: FileText, page: "ReportTemplateManager" },
   { name: "Delivery Analytics", icon: TrendingUp, page: "DeliveryAnalytics" },
   { name: "Delivery Activity", icon: Activity, page: "DeliveryActivityLog" },
+  { name: "Delivery Alerts", icon: Bell, page: "DeliveryAlertsManager" },
+  { name: "Delivery Webhooks", icon: Zap, page: "DeliveryWebhooksManager" },
   { name: "Delivery Settings", icon: Shield, page: "DeliverySettings" },
 ];
 
