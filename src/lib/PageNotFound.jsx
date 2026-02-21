@@ -1,24 +1,27 @@
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
-import { useLocation } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-
-
-export default function PageNotFound({}) {
+export default function PageNotFound() {
     const location = useLocation();
+    const navigate = useNavigate();
     const pageName = location.pathname.substring(1);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const { data: authData, isFetched } = useQuery({
-        queryKey: ['user'],
-        queryFn: async () => {
+    useEffect(() => {
+        const checkAuth = async () => {
             try {
+                const { base44 } = await import('@/api/base44Client');
                 const user = await base44.auth.me();
-                return { user, isAuthenticated: true };
-            } catch (error) {
-                return { user: null, isAuthenticated: false };
+                setIsAdmin(user?.role === 'admin');
+            } catch {
+                setIsAdmin(false);
+            } finally {
+                setIsLoading(false);
             }
-        }
-    });
+        };
+        checkAuth();
+    }, []);
     
     return (
         <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
