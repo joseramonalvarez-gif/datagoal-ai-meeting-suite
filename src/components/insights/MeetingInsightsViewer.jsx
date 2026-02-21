@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Lightbulb, Target, TrendingUp, Loader, AlertTriangle, CheckCircle, FileText, Lock } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { canTriggerAnalysis, canViewInsights } from '../lib/roleUtils';
+import { canTriggerAnalysis, canViewInsights } from '../utils/roleUtils';
 
 const severityColors = {
   low: 'bg-blue-100 text-blue-800',

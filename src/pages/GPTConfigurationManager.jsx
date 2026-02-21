@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Plus, Loader, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { canManageGPT } from '../lib/roleUtils';
+import { canManageGPT } from '../components/utils/roleUtils';
 import RoleGuard from '../components/RoleGuard';
 import GPTConfigForm from '../components/gpt/GPTConfigForm';
 import GPTConfigList from '../components/gpt/GPTConfigList';
