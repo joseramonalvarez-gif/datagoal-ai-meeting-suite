@@ -5,8 +5,8 @@ import { base44 } from "@/api/base44Client";
 import { canManageGPT } from "./components/utils/roleUtils";
 import {
   LayoutDashboard, Calendar, Clock, FolderTree, Shield, Users,
-  FileText, CheckSquare, MessageSquare, FileCheck, Flag,
-  Search, Bell, ChevronDown, Menu, X, LogOut, Settings, FlaskConical, Zap
+  FileText, CheckSquare, MessageSquare, Flag,
+  Search, Bell, ChevronDown, Menu, X, LogOut, FlaskConical, Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

@@ -47,46 +47,46 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AgentsWhatsApp from './pages/AgentsWhatsApp';
 import AuditLog from './pages/AuditLog';
 import CalendarView from './pages/CalendarView';
 import Chat from './pages/Chat';
 import Clients from './pages/Clients';
 import Dashboard from './pages/Dashboard';
 import Documents from './pages/Documents';
+import GPTConfigurationManager from './pages/GPTConfigurationManager';
 import Meetings from './pages/Meetings';
 import Milestones from './pages/Milestones';
 import NotificationSettings from './pages/NotificationSettings';
 import Notifications from './pages/Notifications';
 import Projects from './pages/Projects';
 import QAControlCenter from './pages/QAControlCenter';
+import Search from './pages/Search';
 import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
 import WorkflowRules from './pages/WorkflowRules';
-import GPTConfigurationManager from './pages/GPTConfigurationManager';
-import Search from './pages/Search';
-import AgentsWhatsApp from './pages/AgentsWhatsApp';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AgentsWhatsApp": AgentsWhatsApp,
     "AuditLog": AuditLog,
     "CalendarView": CalendarView,
     "Chat": Chat,
     "Clients": Clients,
     "Dashboard": Dashboard,
     "Documents": Documents,
+    "GPTConfigurationManager": GPTConfigurationManager,
     "Meetings": Meetings,
     "Milestones": Milestones,
     "NotificationSettings": NotificationSettings,
     "Notifications": Notifications,
     "Projects": Projects,
     "QAControlCenter": QAControlCenter,
+    "Search": Search,
     "Tasks": Tasks,
     "TimeTracking": TimeTracking,
     "WorkflowRules": WorkflowRules,
-    "GPTConfigurationManager": GPTConfigurationManager,
-    "Search": Search,
-    "AgentsWhatsApp": AgentsWhatsApp,
 }
 
 export const pagesConfig = {

@@ -7,7 +7,7 @@ import TaskOverview from "../components/dashboard/TaskOverview";
 import GanttChart from "../components/dashboard/GanttChart";
 import MilestonesPanel from "../components/dashboard/MilestonesPanel";
 import ProjectHealthCard from "../components/dashboard/ProjectHealthCard";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Line, LineChart } from "recharts";
 
 const COLORS = ["#33A19A", "#1B2731", "#3E4C59", "#B7CAC9", "#F59E0B", "#EF4444"];
 

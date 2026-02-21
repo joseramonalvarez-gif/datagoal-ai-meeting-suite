@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Users, Calendar, ChevronRight, Search, FileText, Mic, Brain, Paperclip, ClipboardList } from "lucide-react";
+import { Plus, Users, Calendar, ChevronRight, Search, Mic, Brain, Paperclip } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
