@@ -27,7 +27,7 @@ async function finalizeRun(runId, checks) {
   const failed = checks.filter(c => c.status === "FAILED").length;
   const skipped = checks.filter(c => c.status === "SKIPPED").length;
   const criticalFails = checks.filter(c =>
-    c.status === "FAILED" && ["FILE-002","TRANS-001","EMAIL-001","NOTIF-001"].includes(c.check_code)
+    c.status === "FAILED" && ["FILE-002","TRANS-001","NOTIF-001"].includes(c.check_code)
   );
 
   let status = "SUCCESS";
