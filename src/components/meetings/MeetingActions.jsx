@@ -161,7 +161,11 @@ export default function MeetingActions({ meeting, onUpdate }) {
 
   const handleGenerateReport = async () => {
     setProcessing("report");
-    const transcripts = await base44.entities.Transcript.filter({ meeting_id: meeting.id }, '-version', 1);
+    const [transcripts, existingTasks, templates] = await Promise.all([
+      base44.entities.Transcript.filter({ meeting_id: meeting.id }, '-version', 1),
+      base44.entities.Task.filter({ meeting_id: meeting.id }, '-created_date'),
+      base44.entities.ReportTemplate.filter({ is_active: true }),
+    ]);
     const transcript = transcripts[0];
     if (!transcript) {
       toast.error("No hay transcripción disponible");
@@ -173,31 +177,35 @@ export default function MeetingActions({ meeting, onUpdate }) {
       `${s.start_time || ""}-${s.end_time || ""} | ${s.speaker_label || s.speaker_id || ""} | "${s.text_literal || ""}"`
     ).join("\n") || "";
 
-    const PROMPT = `Actúa como un consultor senior de Nevada & Amurai. Tienes ante ti una transcripción completa de una reunión. Analízala y construye un informe profesional, exhaustivo y accionable siguiendo la estructura proporcionada más abajo. El informe debe interpretar, no solo resumir, y facilitar la toma de decisiones del cliente y el seguimiento interno del proyecto.
+    // Pick template: default first, then first active, else built-in
+    const template = templates.find(t => t.is_default) || templates[0];
+    const tone = template?.tone || "ejecutivo";
+    const sections = template?.sections?.filter(s => s.enabled) || [];
 
-Estructura del Informe:
-1. INFORMACIÓN GENERAL
-2. OBJETIVO Y CONTEXTO DE LA SESIÓN
-3. TEMAS PRINCIPALES ABORDADOS
-4. ANÁLISIS DE LOS ELEMENTOS CLAVE
-5. ACUERDOS Y DECISIONES TOMADAS
-6. ACCIONES COMPROMETIDAS Y PROPIETARIOS
-7. ELEMENTOS ABIERTOS O PENDIENTES
-8. PROPUESTA DE PRÓXIMOS PASOS
-9. OBSERVACIONES DEL CONSULTOR
-10. FRASE DE CIERRE PROFESIONAL
+    const sectionList = sections.length
+      ? sections.map((s, i) => `${i + 1}. ${s.title}${s.prompt_hint ? ` — ${s.prompt_hint}` : ""}`).join("\n")
+      : `1. INFORMACIÓN GENERAL\n2. OBJETIVO Y CONTEXTO\n3. TEMAS TRATADOS\n4. ACUERDOS Y DECISIONES\n5. ACCIONES COMPROMETIDAS\n6. ELEMENTOS ABIERTOS\n7. PRÓXIMOS PASOS\n8. OBSERVACIONES DEL CONSULTOR`;
 
-Cada sección debe ser redactada con lenguaje claro, profesional, estratégico, y con foco en acción y decisión. Debe poder utilizarse como entregable al cliente y como documento operativo interno.
+    // Include linked tasks summary if template says so
+    const taskSummary = (template?.include_task_summary !== false) && existingTasks.length > 0
+      ? `\n\nTAREAS YA CREADAS EN EL SISTEMA (vincúlalas en la sección de acciones):\n${existingTasks.map(t => `- [${t.status}] ${t.title} — Responsable: ${t.assignee_name || "Sin asignar"} — Fecha: ${t.due_date || "Sin fecha"}`).join("\n")}`
+      : "";
 
-Título de la reunión: ${meeting.title}
-Fecha: ${meeting.date}
-Participantes: ${meeting.participants?.map(p => `${p.name} (${p.email})`).join(", ") || "No especificados"}
-Objetivo: ${meeting.objective || "No especificado"}
+    const PROMPT = `Actúa como un consultor senior. Genera un informe profesional de reunión con tono ${tone}.
+El informe debe seguir EXACTAMENTE estas secciones:
+${sectionList}
+
+Datos de la reunión:
+- Título: ${meeting.title}
+- Fecha: ${meeting.date}
+- Participantes: ${meeting.participants?.map(p => `${p.name} (${p.email})`).join(", ") || "No especificados"}
+- Objetivo: ${meeting.objective || "No especificado"}
+${taskSummary}
 
 TRANSCRIPCIÓN:
 ${transcriptText}
 
-Genera el informe completo en Markdown, en español, con tono profesional de consultoría.`;
+Genera el informe completo en Markdown, en español. Cada sección con encabezado ##. Tono: ${tone}. Sé exhaustivo, accionable y estratégico.`;
 
     const result = await base44.integrations.Core.InvokeLLM({ prompt: PROMPT });
 
