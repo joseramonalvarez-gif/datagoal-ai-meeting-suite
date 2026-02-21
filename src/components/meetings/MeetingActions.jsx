@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, Mic, Brain, ListChecks, Mail, CheckCircle, Loader2 } from "lucide-react";
+import { Upload, FileText, Mic, Brain, ListChecks, Mail, CheckCircle, Loader2, Settings2 } from "lucide-react";
+import ReportTemplateManager from "./ReportTemplateManager";
 import { toast } from "sonner";
 import { notifyTaskAssigned } from "../tasks/taskNotifications";
 
 export default function MeetingActions({ meeting, onUpdate }) {
   const [processing, setProcessing] = useState(null);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   const isTranscribed = ["transcribed", "report_generated", "approved", "closed"].includes(meeting?.status);
 
@@ -409,13 +411,19 @@ ${report.content_markdown?.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>').r
   );
 
   return (
-    <div className="flex flex-wrap gap-2">
-      <ActionButton icon={Upload} label="Subir audio" onClick={handleUploadAudio} action="audio" />
-      <ActionButton icon={FileText} label="Subir transcripción" onClick={handleUploadTranscript} action="transcript_upload" />
-      <ActionButton icon={Mic} label="Transcribir" onClick={handleTranscribe} action="transcribe" disabled={!meeting?.audio_url} title={!meeting?.audio_url ? "Sube un audio primero" : undefined} />
-      <ActionButton icon={Brain} label="Generar informe" onClick={handleGenerateReport} action="report" variant={isTranscribed ? "default" : "outline"} disabled={!isTranscribed} title={!isTranscribed ? "Requiere transcripción completada" : undefined} />
-      <ActionButton icon={ListChecks} label="Extraer tareas" onClick={handleExtractTasks} action="tasks" disabled={!isTranscribed} title={!isTranscribed ? "Requiere transcripción completada" : undefined} />
-      <ActionButton icon={Mail} label="Enviar informe" onClick={handleSendEmail} action="email" />
-    </div>
+    <>
+      <div className="flex flex-wrap gap-2">
+        <ActionButton icon={Upload} label="Subir audio" onClick={handleUploadAudio} action="audio" />
+        <ActionButton icon={FileText} label="Subir transcripción" onClick={handleUploadTranscript} action="transcript_upload" />
+        <ActionButton icon={Mic} label="Transcribir" onClick={handleTranscribe} action="transcribe" disabled={!meeting?.audio_url} title={!meeting?.audio_url ? "Sube un audio primero" : undefined} />
+        <ActionButton icon={Brain} label="Generar informe" onClick={handleGenerateReport} action="report" variant={isTranscribed ? "default" : "outline"} disabled={!isTranscribed} title={!isTranscribed ? "Requiere transcripción completada" : undefined} />
+        <ActionButton icon={ListChecks} label="Extraer tareas" onClick={handleExtractTasks} action="tasks" disabled={!isTranscribed} title={!isTranscribed ? "Requiere transcripción completada" : undefined} />
+        <ActionButton icon={Mail} label="Enviar informe" onClick={handleSendEmail} action="email" />
+        <Button onClick={() => setShowTemplates(true)} variant="ghost" size="sm" className="gap-2 text-xs text-[#3E4C59]" title="Gestionar plantillas de informes">
+          <Settings2 className="w-4 h-4" /> Plantillas
+        </Button>
+      </div>
+      <ReportTemplateManager open={showTemplates} onClose={() => setShowTemplates(false)} />
+    </>
   );
 }
