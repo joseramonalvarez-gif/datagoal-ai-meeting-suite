@@ -48,6 +48,7 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AuditLog from './pages/AuditLog';
+import CalendarView from './pages/CalendarView';
 import Chat from './pages/Chat';
 import Clients from './pages/Clients';
 import Dashboard from './pages/Dashboard';
@@ -56,15 +57,16 @@ import Meetings from './pages/Meetings';
 import Milestones from './pages/Milestones';
 import Notifications from './pages/Notifications';
 import Projects from './pages/Projects';
+import QAControlCenter from './pages/QAControlCenter';
 import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
-import QAControlCenter from './pages/QAControlCenter';
-import CalendarView from './pages/CalendarView';
+import NotificationSettings from './pages/NotificationSettings';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AuditLog": AuditLog,
+    "CalendarView": CalendarView,
     "Chat": Chat,
     "Clients": Clients,
     "Dashboard": Dashboard,
@@ -73,10 +75,10 @@ export const PAGES = {
     "Milestones": Milestones,
     "Notifications": Notifications,
     "Projects": Projects,
+    "QAControlCenter": QAControlCenter,
     "Tasks": Tasks,
     "TimeTracking": TimeTracking,
-    "QAControlCenter": QAControlCenter,
-    "CalendarView": CalendarView,
+    "NotificationSettings": NotificationSettings,
 }
 
 export const pagesConfig = {
