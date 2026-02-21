@@ -49,6 +49,8 @@ const NAV_ITEMS = [
   { name: "Delivery Webhooks", icon: Zap, page: "DeliveryWebhooksManager" },
   { name: "Delivery Settings", icon: Shield, page: "DeliverySettings" },
   { name: "BigQuery Custom", icon: TrendingUp, page: "BigQueryCustom" },
+  { name: "Consultas Guardadas", icon: Zap, page: "SavedQueriesManager" },
+  { name: "Reportes Personalizados", icon: TrendingUp, page: "CustomReportsBuilder" },
   ];
 
 export default function Layout({ children, currentPageName }) {
