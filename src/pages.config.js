@@ -55,12 +55,13 @@ import Dashboard from './pages/Dashboard';
 import Documents from './pages/Documents';
 import Meetings from './pages/Meetings';
 import Milestones from './pages/Milestones';
+import NotificationSettings from './pages/NotificationSettings';
 import Notifications from './pages/Notifications';
 import Projects from './pages/Projects';
 import QAControlCenter from './pages/QAControlCenter';
 import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
-import NotificationSettings from './pages/NotificationSettings';
+import WorkflowRules from './pages/WorkflowRules';
 import __Layout from './Layout.jsx';
 
 
@@ -73,12 +74,13 @@ export const PAGES = {
     "Documents": Documents,
     "Meetings": Meetings,
     "Milestones": Milestones,
+    "NotificationSettings": NotificationSettings,
     "Notifications": Notifications,
     "Projects": Projects,
     "QAControlCenter": QAControlCenter,
     "Tasks": Tasks,
     "TimeTracking": TimeTracking,
-    "NotificationSettings": NotificationSettings,
+    "WorkflowRules": WorkflowRules,
 }
 
 export const pagesConfig = {
