@@ -40,6 +40,7 @@ const NAV_ITEMS = [
   { name: "Prompts", icon: FileText, page: "PromptTemplateManager" },
   { name: "Templates", icon: FileText, page: "ReportTemplateManager" },
   { name: "Delivery Analytics", icon: TrendingUp, page: "DeliveryAnalytics" },
+  { name: "Delivery Settings", icon: Shield, page: "DeliverySettings" },
 ];
 
 export default function Layout({ children, currentPageName }) {

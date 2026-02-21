@@ -73,6 +73,7 @@ import WorkflowRules from './pages/WorkflowRules';
 import PromptTemplateManager from './pages/PromptTemplateManager';
 import ReportTemplateManager from './pages/ReportTemplateManager';
 import DeliveryAnalytics from './pages/DeliveryAnalytics';
+import DeliverySettings from './pages/DeliverySettings';
 import __Layout from './Layout.jsx';
 
 
@@ -103,6 +104,7 @@ export const PAGES = {
     "PromptTemplateManager": PromptTemplateManager,
     "ReportTemplateManager": ReportTemplateManager,
     "DeliveryAnalytics": DeliveryAnalytics,
+    "DeliverySettings": DeliverySettings,
 }
 
 export const pagesConfig = {
