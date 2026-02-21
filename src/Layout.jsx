@@ -48,7 +48,8 @@ const NAV_ITEMS = [
   { name: "Delivery Activity", icon: Activity, page: "DeliveryActivityLog" },
   { name: "Delivery Webhooks", icon: Zap, page: "DeliveryWebhooksManager" },
   { name: "Delivery Settings", icon: Shield, page: "DeliverySettings" },
-];
+  { name: "BigQuery Custom", icon: TrendingUp, page: "BigQueryCustom" },
+  ];
 
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
