@@ -113,6 +113,17 @@ export async function runSmoke({ run, selectedClient, selectedProject, user, onP
     const meeting = (await base44.entities.Meeting.filter({ id: qaMeetingId }))[0];
     if (!meeting?.audio_url) throw new Error("La reunión QA no tiene audio_url");
 
+    // Check if file_url has a supported extension
+    const audioUrl = meeting.audio_url || "";
+    const ext = audioUrl.split("?")[0].split(".").pop().toLowerCase();
+    const supportedExts = ["mp3","wav","ogg","webm","mp4","flac","aac"];
+    if (!supportedExts.includes(ext)) {
+      const c = await saveCheck(runId, "TRANS-001", "Transcripción desde audio corto", "SKIPPED",
+        `Tipo de archivo no soportado por el LLM: .${ext}. Soportados: ${supportedExts.join(", ")}`,
+        `El asset de audio tiene extensión .${ext} que no está soportada para transcripción directa.`, Date.now()-t2);
+      checks.push(c);
+      return { checks, qaMeetingId };
+    }
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: `Transcribe literally this audio. Identify speakers and provide timestamps in HH:MM:SS format. Return segments with start_time, end_time, speaker_id (e.g. "SPK_1"), speaker_label (e.g. "Hablante 1"), and text_literal. Be verbatim, do not summarize.`,
       file_urls: [meeting.audio_url],
