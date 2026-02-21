@@ -278,6 +278,13 @@ export async function runFull({ run, selectedClient, selectedProject, user, onPr
     const prevId = existing[existing.length - 1]?.id;
 
     const meeting = (await base44.entities.Meeting.filter({ id: qaMeetingId }))[0];
+    const ext2 = (meeting.audio_url || "").split("?")[0].split(".").pop().toLowerCase();
+    const supportedExts2 = ["mp3","wav","ogg","webm","mp4","flac","aac"];
+    if (!supportedExts2.includes(ext2)) {
+      const c = await saveCheck(runId, "TRANS-002", "Versionado de transcripción", "SKIPPED",
+        `Tipo de archivo no soportado: .${ext2}`, "", Date.now()-t6);
+      checks.push(c);
+    } else {
     const result = await base44.integrations.Core.InvokeLLM({
       prompt: "Transcribe literally. Return segments with start_time HH:MM:SS, end_time, speaker_id, speaker_label, text_literal.",
       file_urls: [meeting.audio_url],
