@@ -82,6 +82,8 @@ import TimeTracking from './pages/TimeTracking';
 import WorkflowRules from './pages/WorkflowRules';
 import BigQueryReports from './pages/BigQueryReports';
 import BigQueryCustom from './pages/BigQueryCustom';
+import SavedQueriesManager from './pages/SavedQueriesManager';
+import CustomReportsBuilder from './pages/CustomReportsBuilder';
 import __Layout from './Layout.jsx';
 
 
@@ -121,6 +123,8 @@ export const PAGES = {
     "WorkflowRules": WorkflowRules,
     "BigQueryReports": BigQueryReports,
     "BigQueryCustom": BigQueryCustom,
+    "SavedQueriesManager": SavedQueriesManager,
+    "CustomReportsBuilder": CustomReportsBuilder,
 }
 
 export const pagesConfig = {
