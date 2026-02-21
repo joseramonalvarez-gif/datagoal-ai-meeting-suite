@@ -47,16 +47,21 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AgentsHub from './pages/AgentsHub';
 import AgentsWhatsApp from './pages/AgentsWhatsApp';
 import AuditLog from './pages/AuditLog';
+import AutomationRuns from './pages/AutomationRuns';
 import CalendarView from './pages/CalendarView';
 import Chat from './pages/Chat';
 import Clients from './pages/Clients';
 import Dashboard from './pages/Dashboard';
+import DeliveryCenter from './pages/DeliveryCenter';
 import Documents from './pages/Documents';
 import GPTConfigurationManager from './pages/GPTConfigurationManager';
+import KnowledgeHub from './pages/KnowledgeHub';
 import Meetings from './pages/Meetings';
 import Milestones from './pages/Milestones';
+import MonitoringDashboard from './pages/MonitoringDashboard';
 import NotificationSettings from './pages/NotificationSettings';
 import Notifications from './pages/Notifications';
 import Projects from './pages/Projects';
@@ -65,25 +70,26 @@ import Search from './pages/Search';
 import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
 import WorkflowRules from './pages/WorkflowRules';
-import AgentsHub from './pages/AgentsHub';
-import KnowledgeHub from './pages/KnowledgeHub';
-import AutomationRuns from './pages/AutomationRuns';
-import MonitoringDashboard from './pages/MonitoringDashboard';
-import DeliveryCenter from './pages/DeliveryCenter';
+import PromptTemplateManager from './pages/PromptTemplateManager';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AgentsHub": AgentsHub,
     "AgentsWhatsApp": AgentsWhatsApp,
     "AuditLog": AuditLog,
+    "AutomationRuns": AutomationRuns,
     "CalendarView": CalendarView,
     "Chat": Chat,
     "Clients": Clients,
     "Dashboard": Dashboard,
+    "DeliveryCenter": DeliveryCenter,
     "Documents": Documents,
     "GPTConfigurationManager": GPTConfigurationManager,
+    "KnowledgeHub": KnowledgeHub,
     "Meetings": Meetings,
     "Milestones": Milestones,
+    "MonitoringDashboard": MonitoringDashboard,
     "NotificationSettings": NotificationSettings,
     "Notifications": Notifications,
     "Projects": Projects,
@@ -92,11 +98,7 @@ export const PAGES = {
     "Tasks": Tasks,
     "TimeTracking": TimeTracking,
     "WorkflowRules": WorkflowRules,
-    "AgentsHub": AgentsHub,
-    "KnowledgeHub": KnowledgeHub,
-    "AutomationRuns": AutomationRuns,
-    "MonitoringDashboard": MonitoringDashboard,
-    "DeliveryCenter": DeliveryCenter,
+    "PromptTemplateManager": PromptTemplateManager,
 }
 
 export const pagesConfig = {
