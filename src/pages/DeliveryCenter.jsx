@@ -6,12 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertCircle, Clock, Download, Send, RefreshCw, Filter, Zap } from 'lucide-react';
+import DeliveryCard from '@/components/delivery/DeliveryCard';
+import DeliveryModal from '@/components/delivery/DeliveryModal';
 
 export default function DeliveryCenter() {
-  const [selectedProject, setSelectedProject] = useState(null);
   const [filters, setFilters] = useState({ status: 'all' });
   const [selectedDelivery, setSelectedDelivery] = useState(null);
+  const [selectedCheckpoints, setSelectedCheckpoints] = useState(null);
   const queryClient = useQueryClient();
+  const [loadingDeliveryId, setLoadingDeliveryId] = useState(null);
 
   const { data: deliveryRuns = [] } = useQuery({
     queryKey: ['deliveryRuns', filters],
@@ -47,8 +50,46 @@ export default function DeliveryCenter() {
         delivery_run_id
       });
       return data;
+    },
+    onSuccess: (data) => {
+      setSelectedCheckpoints(data.checkpoints);
+      queryClient.invalidateQueries({ queryKey: ['deliveryRuns'] });
     }
   });
+
+  const sendDeliveryMutation = useMutation({
+    mutationFn: async ({ delivery_run_id, recipients }) => {
+      const { data } = await base44.functions.invoke('sendDeliveryEmail', {
+        delivery_run_id,
+        recipients
+      });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['deliveryRuns'] });
+      setSelectedDelivery(null);
+    }
+  });
+
+  const handleValidateQA = async (deliveryId) => {
+    setLoadingDeliveryId(deliveryId);
+    await validateQAMutation.mutateAsync(deliveryId);
+    setLoadingDeliveryId(null);
+  };
+
+  const handleSendDelivery = async (deliveryId) => {
+    setLoadingDeliveryId(deliveryId);
+    const delivery = deliveryRuns.find(d => d.id === deliveryId);
+    if (delivery) {
+      // Get recipients from meeting
+      const meeting = delivery.trigger_entity_id; // This is simplified
+      await sendDeliveryMutation.mutateAsync({
+        delivery_run_id: deliveryId,
+        recipients: ['placeholder@example.com'] // TODO: Get from meeting
+      });
+    }
+    setLoadingDeliveryId(null);
+  };
 
   const statusConfig = {
     running: { icon: Clock, color: 'bg-blue-100 text-blue-800', label: 'En progreso' },
@@ -114,135 +155,33 @@ export default function DeliveryCenter() {
             </CardContent>
           </Card>
         ) : (
-          deliveryRuns.map(delivery => {
-            const config = statusConfig[delivery.status];
-            const StatusIcon = config?.icon;
-            return (
-              <Card
-                key={delivery.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => setSelectedDelivery(delivery)}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        {StatusIcon && <StatusIcon className={`w-5 h-5 ${config.color}`} />}
-                        <CardTitle className="text-lg">{delivery.trigger_entity_type}</CardTitle>
-                        <Badge className={config?.color}>{config?.label}</Badge>
-                      </div>
-                      <CardDescription>
-                        Entidad: {delivery.trigger_entity_id}
-                      </CardDescription>
-                    </div>
-                    <div className="text-right">
-                      {qualityBadge(delivery.quality_score)}
-                      <p className="text-xs text-[#3E4C59] mt-1">
-                        {new Date(delivery.created_date).toLocaleDateString('es-ES')}
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  {/* Timeline of steps */}
-                  <div className="space-y-2">
-                    {delivery.steps_executed?.map((step, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-sm">
-                        {step.status === 'success' && (
-                          <CheckCircle2 className="w-4 h-4 text-green-600" />
-                        )}
-                        {step.status === 'failed' && (
-                          <AlertCircle className="w-4 h-4 text-red-600" />
-                        )}
-                        {step.status === 'pending' && (
-                          <Clock className="w-4 h-4 text-blue-600" />
-                        )}
-                        <span className="text-[#3E4C59]">{step.step_name}</span>
-                        {step.error && <span className="text-red-600 text-xs">({step.error})</span>}
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-2 border-t border-[#B7CAC9]/30">
-                    {delivery.status === 'success' && (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            validateQAMutation.mutate(delivery.id);
-                          }}
-                        >
-                          <CheckCircle2 className="w-4 h-4 mr-1" />
-                          Validar QA
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Download className="w-4 h-4 mr-1" />
-                          Descargar
-                        </Button>
-                        <Button size="sm" className="bg-[#33A19A]">
-                          <Send className="w-4 h-4 mr-1" />
-                          Enviar
-                        </Button>
-                      </>
-                    )}
-                    {delivery.status === 'failed' && (
-                      <Button size="sm" variant="outline">
-                        <RefreshCw className="w-4 h-4 mr-1" />
-                        Reintentar
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })
+          deliveryRuns.map(delivery => (
+            <DeliveryCard
+              key={delivery.id}
+              delivery={delivery}
+              onValidate={handleValidateQA}
+              onDownload={() => {}}
+              onSend={handleSendDelivery}
+              onRetry={() => {}}
+              isLoading={loadingDeliveryId === delivery.id}
+            />
+          ))
         )}
       </div>
 
       {/* Detail Modal */}
       {selectedDelivery && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setSelectedDelivery(null)}>
-          <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <CardHeader className="flex flex-row items-start justify-between sticky top-0 bg-white border-b">
-              <div>
-                <CardTitle>Detalle de Entrega</CardTitle>
-                <CardDescription>{selectedDelivery.id}</CardDescription>
-              </div>
-              <Button variant="ghost" onClick={() => setSelectedDelivery(null)}>×</Button>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-6">
-              {/* Content Preview */}
-              <div>
-                <h4 className="font-semibold text-[#1B2731] mb-2">Contenido</h4>
-                <div className="bg-[#FFFAF3] p-4 rounded-lg border border-[#B7CAC9]/30 max-h-64 overflow-y-auto text-sm text-[#3E4C59]">
-                  {selectedDelivery.output_content ? (
-                    selectedDelivery.output_content.substring(0, 500) + '...'
-                  ) : (
-                    'Sin contenido'
-                  )}
-                </div>
-              </div>
-
-              {/* Metadata */}
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-[#3E4C59] font-medium">Estado</p>
-                  <Badge className={statusConfig[selectedDelivery.status]?.color}>
-                    {statusConfig[selectedDelivery.status]?.label}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-[#3E4C59] font-medium">Tiempo total</p>
-                  <p className="text-[#1B2731]">{selectedDelivery.total_time_ms}ms</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <DeliveryModal
+          delivery={selectedDelivery}
+          checkpoints={selectedCheckpoints}
+          onClose={() => {
+            setSelectedDelivery(null);
+            setSelectedCheckpoints(null);
+          }}
+          onSend={handleSendDelivery}
+          onValidate={handleValidateQA}
+          isLoading={loadingDeliveryId === selectedDelivery.id}
+        />
       )}
     </div>
   );
