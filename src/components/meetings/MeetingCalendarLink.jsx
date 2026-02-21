@@ -31,7 +31,7 @@ export default function MeetingCalendarLink({ meeting }) {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-3">
       <a href={gcalUrl} target="_blank" rel="noopener noreferrer">
         <Button variant="outline" size="sm" className="gap-1.5 text-xs border-[#33A19A]/30 text-[#33A19A] hover:bg-[#E8F5F4]">
           <CalendarPlus className="w-3.5 h-3.5" />
