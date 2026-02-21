@@ -79,6 +79,7 @@ import DeliveryAlertsManager from './pages/DeliveryAlertsManager';
 import DeliveryWebhooksManager from './pages/DeliveryWebhooksManager';
 import ExecutiveDashboard from './pages/ExecutiveDashboard';
 import AdminPanel from './pages/AdminPanel';
+import ComplianceCenter from './pages/ComplianceCenter';
 import __Layout from './Layout.jsx';
 
 
@@ -115,6 +116,7 @@ export const PAGES = {
     "DeliveryWebhooksManager": DeliveryWebhooksManager,
     "ExecutiveDashboard": ExecutiveDashboard,
     "AdminPanel": AdminPanel,
+    "ComplianceCenter": ComplianceCenter,
 }
 
 export const pagesConfig = {
