@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Users, Calendar, ChevronRight, Search, FileText, Mic, Brain } from "lucide-react";
+import { Plus, Users, Calendar, ChevronRight, Search, FileText, Mic, Brain, Paperclip, ClipboardList } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -11,6 +11,9 @@ import MeetingForm from "../components/meetings/MeetingForm";
 import MeetingActions from "../components/meetings/MeetingActions";
 import TranscriptViewer from "../components/meetings/TranscriptViewer";
 import ReportViewer from "../components/meetings/ReportViewer";
+import MeetingCalendarLink from "../components/meetings/MeetingCalendarLink";
+import MeetingAttachments from "../components/meetings/MeetingAttachments";
+import MeetingMinutes from "../components/meetings/MeetingMinutes";
 
 const STATUS_LABELS = {
   scheduled: { label: "Programada", color: "bg-blue-50 text-blue-700" },
