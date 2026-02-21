@@ -25,6 +25,8 @@ export default function Projects({ selectedClient }) {
   const [showDialog, setShowDialog] = useState(false);
   const [editProj, setEditProj] = useState(null);
   const [search, setSearch] = useState("");
+  const [showNewClientModal, setShowNewClientModal] = useState(false);
+  const [newClientForm, setNewClientForm] = useState({ name: "", industry: "" });
   const [form, setForm] = useState({ name: "", description: "", client_id: "", status: "active", start_date: "", end_date: "" });
 
   useEffect(() => { loadData(); }, [selectedClient]);
@@ -65,6 +67,25 @@ export default function Projects({ selectedClient }) {
   const handleDelete = async (id) => {
     await base44.entities.Project.delete(id);
     loadData();
+  };
+
+  const handleCreateClient = async () => {
+    if (!newClientForm.name.trim()) return;
+    const newClient = await base44.entities.Client.create(newClientForm);
+    // Auto-trigger Drive folder creation
+    try {
+      await base44.functions.invoke('createClientFolderStructure', {
+        client_id: newClient.id,
+        client_name: newClient.name,
+      });
+    } catch (err) {
+      console.error('Drive folder creation failed:', err);
+      // No bloquear si falla Drive
+    }
+    setClients([...clients, newClient]);
+    setForm({ ...form, client_id: newClient.id });
+    setShowNewClientModal(false);
+    setNewClientForm({ name: "", industry: "" });
   };
 
   const getClientName = (id) => clients.find(c => c.id === id)?.name || "—";
@@ -150,15 +171,18 @@ export default function Projects({ selectedClient }) {
             <DialogTitle className="font-heading">{editProj ? "Editar Proyecto" : "Nuevo Proyecto"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Cliente *</label>
-              <Select value={form.client_id} onValueChange={v => setForm({ ...form, client_id: v })}>
-                <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar cliente" /></SelectTrigger>
-                <SelectContent>
-                  {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+             <div>
+               <label className="text-sm font-medium">Cliente *</label>
+               <div className="flex gap-2 mt-1">
+                 <Select value={form.client_id} onValueChange={v => setForm({ ...form, client_id: v })}>
+                   <SelectTrigger className="flex-1"><SelectValue placeholder="Seleccionar cliente" /></SelectTrigger>
+                   <SelectContent>
+                     {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                   </SelectContent>
+                 </Select>
+                 <Button variant="outline" onClick={() => setShowNewClientModal(true)} className="px-3">+ Nuevo</Button>
+               </div>
+             </div>
             <div>
               <label className="text-sm font-medium">Nombre *</label>
               <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="mt-1" />
@@ -182,6 +206,41 @@ export default function Projects({ selectedClient }) {
             <Button variant="outline" onClick={() => setShowDialog(false)}>Cancelar</Button>
             <Button onClick={handleSave} disabled={!form.name || !form.client_id} className="bg-[#33A19A] hover:bg-[#2A857F] text-white">
               {editProj ? "Guardar" : "Crear"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: Crear Cliente On-the-Fly */}
+      <Dialog open={showNewClientModal} onOpenChange={setShowNewClientModal}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-heading">Crear Nuevo Cliente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Nombre *</label>
+              <Input 
+                value={newClientForm.name} 
+                onChange={e => setNewClientForm({ ...newClientForm, name: e.target.value })} 
+                placeholder="Ej: Acme Corp" 
+                className="mt-1" 
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Industria</label>
+              <Input 
+                value={newClientForm.industry} 
+                onChange={e => setNewClientForm({ ...newClientForm, industry: e.target.value })} 
+                placeholder="Ej: Finanzas" 
+                className="mt-1" 
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewClientModal(false)}>Cancelar</Button>
+            <Button onClick={handleCreateClient} disabled={!newClientForm.name.trim()} className="bg-[#33A19A] hover:bg-[#2A857F] text-white">
+              Crear Cliente
             </Button>
           </DialogFooter>
         </DialogContent>
