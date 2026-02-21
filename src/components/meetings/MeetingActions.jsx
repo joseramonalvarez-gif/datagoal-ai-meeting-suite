@@ -63,7 +63,10 @@ export default function MeetingActions({ meeting, onUpdate }) {
       const file = e.target.files[0];
       if (!file) return;
       setProcessing("audio");
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      // Normalize filename extension to lowercase to avoid platform rejection
+      const normalizedName = file.name.replace(/\.[^.]+$/, ext => ext.toLowerCase());
+      const normalizedFile = new File([file], normalizedName, { type: file.type });
+      const { file_url } = await base44.integrations.Core.UploadFile({ file: normalizedFile });
       await base44.entities.Meeting.update(meeting.id, { audio_url: file_url, source_type: "audio_upload", status: "recorded" });
       toast.success("Audio subido. Transcribiendo automáticamente...");
 
