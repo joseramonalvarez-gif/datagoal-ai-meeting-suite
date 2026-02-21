@@ -11,10 +11,10 @@ import { toast } from "sonner";
 import { notifyTaskAssigned } from "../tasks/taskNotifications";
 
 // Supported audio formats & their MIME types
-const AUDIO_ACCEPT = ".mp3,.wav,.m4a,.mp4,.ogg,.webm,.flac,.aac,.opus,.mpeg,.mpga";
+const AUDIO_ACCEPT = ".mp3,.wav,.m4a,.ogg,.webm,.flac,.aac,.opus,.mpeg,.mpga";
 const AUDIO_MIME_MAP = {
   mp3: "audio/mpeg", mpga: "audio/mpeg", mpeg: "audio/mpeg",
-  wav: "audio/wav", m4a: "audio/mp4", mp4: "audio/mp4",
+  wav: "audio/wav", m4a: "audio/mp4",
   ogg: "audio/ogg", webm: "audio/webm", flac: "audio/flac",
   aac: "audio/aac", opus: "audio/opus",
 };
@@ -538,7 +538,7 @@ ${report.content_markdown?.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>').r
       <div className="space-y-3">
         <div className="flex flex-wrap gap-2">
           <ActionButton icon={Upload} label="Subir audio" onClick={handleUploadAudio} action="audio"
-            title={`Formatos: MP3, WAV, M4A, MP4, OGG, WEBM, FLAC, AAC, OPUS (máx ${MAX_AUDIO_MB}MB)`} />
+            title={`Formatos: MP3, WAV, M4A, OGG, WEBM, FLAC, AAC, OPUS (máx ${MAX_AUDIO_MB}MB)`} />
           <ActionButton icon={FileText} label="Subir transcripción" onClick={handleUploadTranscript} action="transcript_upload"
             title={`Formatos: TXT, DOCX, PDF, SRT, VTT, ODT, RTF (máx ${MAX_DOC_MB}MB)`} />
           <ActionButton icon={Video} label="Google Meet" onClick={() => setShowGMeet(true)} action="gmeet_open"
@@ -559,7 +559,7 @@ ${report.content_markdown?.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>').r
 
         {/* Format hints */}
         <div className="flex flex-wrap gap-3 text-[10px] text-[#B7CAC9]">
-          <span className="flex items-center gap-1"><Upload className="w-2.5 h-2.5" /> Audio: MP3 WAV M4A FLAC AAC OGG WEBM OPUS MP4 · máx {MAX_AUDIO_MB}MB</span>
+          <span className="flex items-center gap-1"><Upload className="w-2.5 h-2.5" /> Audio: MP3 WAV M4A FLAC AAC OGG WEBM OPUS · máx {MAX_AUDIO_MB}MB</span>
           <span className="flex items-center gap-1"><FileText className="w-2.5 h-2.5" /> Transcripción: DOCX PDF TXT SRT VTT ODT RTF · máx {MAX_DOC_MB}MB</span>
         </div>
       </div>
