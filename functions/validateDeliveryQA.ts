@@ -15,7 +15,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'delivery_run_id required' }, { status: 400 });
     }
 
-    const deliveryRun = await base44.entities.DeliveryRun.read(delivery_run_id);
+    console.log(`[validateDeliveryQA] Starting QA for delivery ${delivery_run_id}`);
+
+    const deliveryRun = await base44.entities.DeliveryRun.get(delivery_run_id);
     if (!deliveryRun) {
       return Response.json({ error: 'DeliveryRun not found' }, { status: 404 });
     }
@@ -234,21 +236,38 @@ Responde SOLO con JSON:
     const overallScore = checkCount > 0 ? totalScore / checkCount : 0;
     const overallStatus = overallScore > 0.85 ? 'READY_TO_SEND' : overallScore > 0.7 ? 'REVIEW_NEEDED' : 'FAILED';
 
-    // Create DeliveryCheckpoint records
-    for (const checkpoint of checkpoints) {
-      await base44.entities.DeliveryCheckpoint.create({
+    // Create DeliveryCheckpoint records in parallel
+    const checkpointIds = [];
+    const createCheckpointPromises = checkpoints.map(async (checkpoint) => {
+      const saved = await base44.entities.DeliveryCheckpoint.create({
         delivery_run_id,
         ...checkpoint
       });
-    }
+      return saved.id;
+    });
+    
+    (await Promise.all(createCheckpointPromises)).forEach(id => checkpointIds.push(id));
 
-    // Update DeliveryRun quality score
+    console.log(`[validateDeliveryQA] QA complete. Score: ${overallScore.toFixed(2)}, Status: ${overallStatus}`);
+
+    // Update DeliveryRun quality score and steps
     await base44.entities.DeliveryRun.update(delivery_run_id, {
       quality_score: overallScore,
-      delivery_checkpoints: checkpoints.map((_, i) => `cp_${i}`)
+      delivery_checkpoints: checkpointIds,
+      status: overallStatus === 'READY_TO_SEND' ? 'success' : overallStatus === 'REVIEW_NEEDED' ? 'review_pending' : 'failed',
+      steps_executed: [
+        ...(deliveryRun.steps_executed || []),
+        {
+          step_name: 'qa_validation',
+          status: 'success',
+          output: `QA score: ${(overallScore * 100).toFixed(0)}%`,
+          timestamp: new Date().toISOString()
+        }
+      ]
     });
 
     return Response.json({
+      success: true,
       overall_status: overallStatus,
       quality_score: overallScore,
       checkpoints,
