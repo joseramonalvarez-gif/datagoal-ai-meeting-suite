@@ -28,8 +28,9 @@ const NAV_ITEMS = [
   { name: "Notificaciones", icon: Bell, page: "Notifications" },
   { name: "Auditoría", icon: Shield, page: "AuditLog" },
   { name: "QA Center", icon: FlaskConical, page: "QAControlCenter" },
-  { name: "Notif. Config", icon: Bell, page: "NotificationSettings" },
-  { name: "Automatizaciones", icon: Zap, page: "WorkflowRules" },
+        { name: "Notif. Config", icon: Bell, page: "NotificationSettings" },
+        { name: "Automatizaciones", icon: Zap, page: "WorkflowRules" },
+        { name: "GPT Config", icon: Zap, page: "GPTConfigurationManager" },
 ];
 
 export default function Layout({ children, currentPageName }) {

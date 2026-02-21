@@ -62,6 +62,7 @@ import QAControlCenter from './pages/QAControlCenter';
 import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
 import WorkflowRules from './pages/WorkflowRules';
+import GPTConfigurationManager from './pages/GPTConfigurationManager';
 import __Layout from './Layout.jsx';
 
 
@@ -81,6 +82,7 @@ export const PAGES = {
     "Tasks": Tasks,
     "TimeTracking": TimeTracking,
     "WorkflowRules": WorkflowRules,
+    "GPTConfigurationManager": GPTConfigurationManager,
 }
 
 export const pagesConfig = {
