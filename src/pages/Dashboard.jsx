@@ -68,16 +68,7 @@ export default function Dashboard({ selectedClient }) {
 
   return (
     <div className="space-y-6">
-      {/* Delivery System Widgets */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <DeliverySystemOverview />
-        <DeliveryLiveMonitor />
-        <DeliveryDashboardWidget />
-      </div>
-
-      <DeliveryNotificationCenter />
-
-      {/* Rest of Dashboard Content */}
+      {/* Dashboard Header */}
       <div>
         <h1 className="font-heading text-2xl font-bold text-[#1B2731]">Panel de Control</h1>
         <p className="text-sm text-[#3E4C59] mt-1">
