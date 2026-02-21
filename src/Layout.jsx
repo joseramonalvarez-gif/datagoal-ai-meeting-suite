@@ -28,6 +28,7 @@ const NAV_ITEMS = [
   { name: "Notificaciones", icon: Bell, page: "Notifications" },
   { name: "Auditoría", icon: Shield, page: "AuditLog" },
   { name: "QA Center", icon: FlaskConical, page: "QAControlCenter" },
+  { name: "Notif. Config", icon: Bell, page: "NotificationSettings" },
 ];
 
 export default function Layout({ children, currentPageName }) {
