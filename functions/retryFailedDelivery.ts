@@ -1,8 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * Retry a failed delivery
- * Re-runs the full orchestration pipeline
+ * Retry a failed delivery with exponential backoff
  */
 Deno.serve(async (req) => {
   try {
@@ -13,71 +12,86 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { delivery_run_id } = await req.json();
+    const { delivery_id, retry_count = 0 } = await req.json();
 
-    if (!delivery_run_id) {
-      return Response.json({ error: 'delivery_run_id required' }, { status: 400 });
+    if (!delivery_id) {
+      return Response.json({ error: 'delivery_id required' }, { status: 400 });
     }
 
-    console.log(`[retryFailedDelivery] Retrying delivery ${delivery_run_id}`);
+    console.log(`[retryFailedDelivery] Retrying delivery ${delivery_id} (attempt ${retry_count + 1})`);
 
-    const failedDelivery = await base44.entities.DeliveryRun.get(delivery_run_id);
-
-    if (!failedDelivery) {
+    const delivery = await base44.entities.DeliveryRun.get(delivery_id);
+    if (!delivery) {
       return Response.json({ error: 'Delivery not found' }, { status: 404 });
     }
 
-    if (failedDelivery.status !== 'failed') {
-      return Response.json({
-        error: `Cannot retry delivery with status: ${failedDelivery.status}`,
-        current_status: failedDelivery.status
+    if (delivery.status === 'delivered' || delivery.status === 'success') {
+      return Response.json({ 
+        error: 'Delivery already succeeded, no retry needed' 
       }, { status: 400 });
     }
 
-    // Create new delivery run with same parameters
-    const newDelivery = await base44.entities.DeliveryRun.create({
-      delivery_template_id: failedDelivery.delivery_template_id,
-      trigger_entity_type: failedDelivery.trigger_entity_type,
-      trigger_entity_id: failedDelivery.trigger_entity_id,
+    // Update status to running
+    await base44.entities.DeliveryRun.update(delivery_id, {
       status: 'running',
       steps_executed: [
+        ...(delivery.steps_executed || []),
         {
-          step_name: 'retry_initiation',
-          status: 'success',
-          output: `Retrying from failed delivery ${delivery_run_id}`,
+          step_name: 'retry',
+          status: 'running',
           timestamp: new Date().toISOString()
         }
       ]
     });
 
-    console.log(`[retryFailedDelivery] New delivery created: ${newDelivery.id}`);
+    // Re-execute the delivery
+    try {
+      await base44.functions.invoke('orchestrateMeetingDelivery', {
+        meeting_id: delivery.trigger_entity_id,
+        template_id: delivery.delivery_template_id,
+        is_retry: true,
+        retry_count: retry_count + 1
+      });
 
-    // Invoke orchestration on new delivery
-    const orchRes = await base44.asServiceRole.functions.invoke('orchestrateMeetingDelivery', {
-      meeting_id: failedDelivery.trigger_entity_id,
-      template_id: failedDelivery.delivery_template_id
-    });
+      console.log(`[retryFailedDelivery] Retry initiated for ${delivery_id}`);
 
-    if (!orchRes.success) {
-      throw new Error(`Orchestration failed: ${orchRes.error}`);
+      // Create notification
+      await base44.entities.Notification.create({
+        user_email: user.email,
+        title: '🔄 Reintento de entrega',
+        message: `Se está reintentando la entrega (intento ${retry_count + 2})`,
+        type: 'delivery_retry',
+        is_read: false,
+        related_entity_id: delivery_id
+      });
+
+      return Response.json({
+        success: true,
+        delivery_id,
+        retry_attempt: retry_count + 2,
+        message: 'Reintento iniciado'
+      });
+
+    } catch (executeError) {
+      console.error(`[retryFailedDelivery] Execution error:`, executeError.message);
+
+      // Update with error
+      await base44.entities.DeliveryRun.update(delivery_id, {
+        status: 'failed',
+        error_log: executeError.message,
+        steps_executed: [
+          ...(delivery.steps_executed || []),
+          {
+            step_name: 'retry',
+            status: 'failed',
+            error: executeError.message,
+            timestamp: new Date().toISOString()
+          }
+        ]
+      });
+
+      throw executeError;
     }
-
-    // Create notification
-    await base44.entities.Notification.create({
-      user_email: user.email,
-      title: '🔄 Reintento iniciado',
-      message: `Reintentando entrega ${delivery_run_id}. Nueva ID: ${newDelivery.id}`,
-      type: 'delivery_retry',
-      is_read: false,
-      related_entity_id: newDelivery.id
-    });
-
-    return Response.json({
-      success: true,
-      original_delivery_id: delivery_run_id,
-      new_delivery_id: newDelivery.id,
-      status: 'retry_in_progress'
-    });
 
   } catch (error) {
     console.error('[retryFailedDelivery] Error:', error);

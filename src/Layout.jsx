@@ -4,10 +4,11 @@ import { createPageUrl } from "./utils";
 import { base44 } from "@/api/base44Client";
 import { canManageGPT } from "./components/utils/roleUtils";
 import {
-        LayoutDashboard, Calendar, Clock, FolderTree, Shield, Users,
-        FileText, CheckSquare, MessageSquare, Flag,
-        Search, Bell, ChevronDown, Menu, X, LogOut, FlaskConical, Zap, MessageCircle, Activity, TrendingUp
-      } from "lucide-react";
+              LayoutDashboard, Calendar, Clock, FolderTree, Shield, Users,
+              FileText, CheckSquare, MessageSquare, Flag,
+              Search, Bell, ChevronDown, Menu, X, LogOut, FlaskConical, Zap, MessageCircle, Activity, TrendingUp
+            } from "lucide-react";
+import { Activity as ActivityIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -40,6 +41,7 @@ const NAV_ITEMS = [
   { name: "Prompts", icon: FileText, page: "PromptTemplateManager" },
   { name: "Templates", icon: FileText, page: "ReportTemplateManager" },
   { name: "Delivery Analytics", icon: TrendingUp, page: "DeliveryAnalytics" },
+  { name: "Delivery Activity", icon: Activity, page: "DeliveryActivityLog" },
   { name: "Delivery Settings", icon: Shield, page: "DeliverySettings" },
 ];
 

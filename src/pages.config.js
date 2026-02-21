@@ -74,6 +74,7 @@ import PromptTemplateManager from './pages/PromptTemplateManager';
 import ReportTemplateManager from './pages/ReportTemplateManager';
 import DeliveryAnalytics from './pages/DeliveryAnalytics';
 import DeliverySettings from './pages/DeliverySettings';
+import DeliveryActivityLog from './pages/DeliveryActivityLog';
 import __Layout from './Layout.jsx';
 
 
@@ -105,6 +106,7 @@ export const PAGES = {
     "ReportTemplateManager": ReportTemplateManager,
     "DeliveryAnalytics": DeliveryAnalytics,
     "DeliverySettings": DeliverySettings,
+    "DeliveryActivityLog": DeliveryActivityLog,
 }
 
 export const pagesConfig = {
