@@ -37,6 +37,8 @@ const NAV_ITEMS = [
   { name: "Automatizaciones", icon: Zap, page: "WorkflowRules" },
   { name: "Historial Auto.", icon: Zap, page: "AutomationRuns" },
   { name: "GPT Config", icon: Zap, page: "GPTConfigurationManager" },
+  { name: "Prompts", icon: FileText, page: "PromptTemplateManager" },
+  { name: "Templates", icon: FileText, page: "ReportTemplateManager" },
 ];
 
 export default function Layout({ children, currentPageName }) {
