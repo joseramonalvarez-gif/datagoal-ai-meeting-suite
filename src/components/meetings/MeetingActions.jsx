@@ -146,6 +146,12 @@ export default function MeetingActions({ meeting, onUpdate }) {
       toast.error("No hay audio para transcribir");
       return;
     }
+    const ext = meeting.audio_url.split("?")[0].split(".").pop().toLowerCase();
+    const supportedExts = ["mp3", "wav", "ogg", "webm", "mp4", "flac", "aac"];
+    if (!supportedExts.includes(ext)) {
+      toast.error(`Formato .${ext} no soportado para transcripción automática. Sube el audio en MP3, WAV, OGG, WEBM, MP4, FLAC o AAC.`);
+      return;
+    }
     setProcessing("transcribe");
     await doTranscribe(meeting.audio_url, meeting.id, meeting.client_id, meeting.project_id);
     toast.success("Transcripción completada");
