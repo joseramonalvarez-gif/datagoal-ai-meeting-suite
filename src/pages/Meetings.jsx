@@ -107,27 +107,30 @@ export default function Meetings({ selectedClient }) {
             <MeetingCalendarLink meeting={selectedMeeting} />
           </div>
 
-          {/* 1-Click Delivery Generator */}
-           <div className="border-t border-[#B7CAC9]/20 pt-4 pb-4 bg-gradient-to-r from-[#E8F5F4] to-transparent rounded-lg p-4 -m-6 mb-4">
-             <h4 className="text-xs font-semibold text-[#33A19A] uppercase tracking-wider mb-3">⚡ Generación Automática</h4>
-             <DeliveryOrchestrator 
-               meeting={selectedMeeting} 
-               onSuccess={async () => {
+          {/* 1-Click Delivery Generator & Actions */}
+           <div className="grid grid-cols-2 gap-4 border-t border-[#B7CAC9]/20 pt-4">
+             {/* Delivery Generator */}
+             <div className="bg-gradient-to-r from-[#E8F5F4] to-transparent rounded-lg p-4">
+               <h4 className="text-xs font-semibold text-[#33A19A] uppercase tracking-wider mb-3">⚡ Generación Automática</h4>
+               <DeliveryOrchestrator 
+                 meeting={selectedMeeting} 
+                 onSuccess={async () => {
+                   const updated = await base44.entities.Meeting.filter({ id: selectedMeeting.id });
+                   if (updated[0]) setSelectedMeeting(updated[0]);
+                   loadData();
+                 }}
+               />
+             </div>
+
+             {/* Actions */}
+             <div className="bg-[#FFFAF3] rounded-lg p-4">
+               <h4 className="text-xs font-semibold text-[#3E4C59] uppercase tracking-wider mb-3">Acciones Manuales</h4>
+               <MeetingActions meeting={selectedMeeting} onUpdate={async () => {
                  const updated = await base44.entities.Meeting.filter({ id: selectedMeeting.id });
                  if (updated[0]) setSelectedMeeting(updated[0]);
                  loadData();
-               }}
-             />
-           </div>
-
-           {/* Actions */}
-           <div className="border-t border-[#B7CAC9]/20 pt-4">
-             <h4 className="text-xs font-semibold text-[#3E4C59] uppercase tracking-wider mb-3">Acciones Manuales</h4>
-             <MeetingActions meeting={selectedMeeting} onUpdate={async () => {
-               const updated = await base44.entities.Meeting.filter({ id: selectedMeeting.id });
-               if (updated[0]) setSelectedMeeting(updated[0]);
-               loadData();
-             }} />
+               }} />
+             </div>
            </div>
 
           {/* Minutes */}
