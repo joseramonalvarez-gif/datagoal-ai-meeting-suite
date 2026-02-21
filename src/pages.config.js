@@ -84,6 +84,7 @@ import BigQueryReports from './pages/BigQueryReports';
 import BigQueryCustom from './pages/BigQueryCustom';
 import SavedQueriesManager from './pages/SavedQueriesManager';
 import CustomReportsBuilder from './pages/CustomReportsBuilder';
+import PermissionManager from './pages/PermissionManager';
 import __Layout from './Layout.jsx';
 
 
@@ -125,6 +126,7 @@ export const PAGES = {
     "BigQueryCustom": BigQueryCustom,
     "SavedQueriesManager": SavedQueriesManager,
     "CustomReportsBuilder": CustomReportsBuilder,
+    "PermissionManager": PermissionManager,
 }
 
 export const pagesConfig = {
