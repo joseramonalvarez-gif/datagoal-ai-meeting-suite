@@ -52,6 +52,7 @@ const NAV_ITEMS = [
   { name: "Consultas Guardadas", icon: Zap, page: "SavedQueriesManager" },
   { name: "Reportes Personalizados", icon: TrendingUp, page: "CustomReportsBuilder" },
   { name: "Gestión Permisos", icon: Shield, page: "PermissionManager" },
+  { name: "Automation Hub", icon: Zap, page: "AutomationDashboard" },
   ];
 
 export default function Layout({ children, currentPageName }) {
