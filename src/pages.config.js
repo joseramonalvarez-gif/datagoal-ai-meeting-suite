@@ -52,10 +52,13 @@ import AgentsHub from './pages/AgentsHub';
 import AgentsWhatsApp from './pages/AgentsWhatsApp';
 import AuditLog from './pages/AuditLog';
 import AutomationRuns from './pages/AutomationRuns';
+import BigQueryCustom from './pages/BigQueryCustom';
+import BigQueryReports from './pages/BigQueryReports';
 import CalendarView from './pages/CalendarView';
 import Chat from './pages/Chat';
 import Clients from './pages/Clients';
 import ComplianceCenter from './pages/ComplianceCenter';
+import CustomReportsBuilder from './pages/CustomReportsBuilder';
 import Dashboard from './pages/Dashboard';
 import DeliveryActivityLog from './pages/DeliveryActivityLog';
 import DeliveryAlertsManager from './pages/DeliveryAlertsManager';
@@ -72,19 +75,17 @@ import Milestones from './pages/Milestones';
 import MonitoringDashboard from './pages/MonitoringDashboard';
 import NotificationSettings from './pages/NotificationSettings';
 import Notifications from './pages/Notifications';
+import PermissionManager from './pages/PermissionManager';
 import Projects from './pages/Projects';
 import PromptTemplateManager from './pages/PromptTemplateManager';
 import QAControlCenter from './pages/QAControlCenter';
 import ReportTemplateManager from './pages/ReportTemplateManager';
+import SavedQueriesManager from './pages/SavedQueriesManager';
 import Search from './pages/Search';
 import Tasks from './pages/Tasks';
 import TimeTracking from './pages/TimeTracking';
 import WorkflowRules from './pages/WorkflowRules';
-import BigQueryReports from './pages/BigQueryReports';
-import BigQueryCustom from './pages/BigQueryCustom';
-import SavedQueriesManager from './pages/SavedQueriesManager';
-import CustomReportsBuilder from './pages/CustomReportsBuilder';
-import PermissionManager from './pages/PermissionManager';
+import AutomationDashboard from './pages/AutomationDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -94,10 +95,13 @@ export const PAGES = {
     "AgentsWhatsApp": AgentsWhatsApp,
     "AuditLog": AuditLog,
     "AutomationRuns": AutomationRuns,
+    "BigQueryCustom": BigQueryCustom,
+    "BigQueryReports": BigQueryReports,
     "CalendarView": CalendarView,
     "Chat": Chat,
     "Clients": Clients,
     "ComplianceCenter": ComplianceCenter,
+    "CustomReportsBuilder": CustomReportsBuilder,
     "Dashboard": Dashboard,
     "DeliveryActivityLog": DeliveryActivityLog,
     "DeliveryAlertsManager": DeliveryAlertsManager,
@@ -114,19 +118,17 @@ export const PAGES = {
     "MonitoringDashboard": MonitoringDashboard,
     "NotificationSettings": NotificationSettings,
     "Notifications": Notifications,
+    "PermissionManager": PermissionManager,
     "Projects": Projects,
     "PromptTemplateManager": PromptTemplateManager,
     "QAControlCenter": QAControlCenter,
     "ReportTemplateManager": ReportTemplateManager,
+    "SavedQueriesManager": SavedQueriesManager,
     "Search": Search,
     "Tasks": Tasks,
     "TimeTracking": TimeTracking,
     "WorkflowRules": WorkflowRules,
-    "BigQueryReports": BigQueryReports,
-    "BigQueryCustom": BigQueryCustom,
-    "SavedQueriesManager": SavedQueriesManager,
-    "CustomReportsBuilder": CustomReportsBuilder,
-    "PermissionManager": PermissionManager,
+    "AutomationDashboard": AutomationDashboard,
 }
 
 export const pagesConfig = {
