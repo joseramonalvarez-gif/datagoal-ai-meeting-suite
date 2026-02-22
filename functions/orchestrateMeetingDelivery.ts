@@ -1,240 +1,225 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+const STEP_NAMES = {
+  LOAD: 'load_data',
+  NORMALIZE: 'normalize_transcript',
+  GENERATE: 'generate_report',
+  UPLOAD_DRIVE: 'upload_to_drive',
+  SEND_EMAIL: 'send_email',
+  LOG: 'log_completion'
+};
+
+function logStep(steps, name, status, output, error) {
+  const existing = steps.findIndex(s => s.step_name === name);
+  const entry = {
+    step_name: name,
+    status,
+    started_at: new Date().toISOString(),
+    output_summary: output || null,
+    error: error || null
+  };
+  if (existing >= 0) {
+    steps[existing] = { ...steps[existing], ...entry };
+  } else {
+    steps.push(entry);
+  }
+  return steps;
+}
+
 Deno.serve(async (req) => {
+  const base44 = createClientFromRequest(req);
+  const startTime = Date.now();
+  const steps = [];
+  let automationRun = null;
+
   try {
-    const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const body = await req.json();
+    const { meeting_id } = body;
+
+    if (!meeting_id) {
+      return Response.json({ error: 'meeting_id requerido' }, { status: 400 });
     }
 
-    const { meeting_id, template_id } = await req.json();
+    // Crear AutomationRun al inicio para trazabilidad
+    automationRun = await base44.entities.AutomationRun.create({
+      meeting_id,
+      automation_type: 'post_meeting',
+      trigger_event: 'manual_or_auto',
+      status: 'running',
+      triggered_by: user.email,
+      steps: []
+    });
 
-    if (!meeting_id || !template_id) {
-      return Response.json({ error: 'meeting_id and template_id required' }, { status: 400 });
-    }
+    // ── PASO 1: CARGAR DATOS ──
+    logStep(steps, STEP_NAMES.LOAD, 'running', null, null);
 
-    // 1. Fetch data
-    const [meeting, template, transcript] = await Promise.all([
-      base44.entities.Meeting.read(meeting_id),
-      base44.entities.DeliveryTemplate.read(template_id),
-      base44.entities.Transcript.filter({ meeting_id }, '-created_date', 1)
+    const [meetings, transcriptsAll] = await Promise.all([
+      base44.entities.Meeting.filter({ id: meeting_id }),
+      base44.entities.Transcript.filter({ meeting_id })
     ]);
 
-    if (!meeting) {
-      return Response.json({ error: 'Meeting not found' }, { status: 404 });
-    }
-    if (!template) {
-      return Response.json({ error: 'Template not found' }, { status: 404 });
+    const meeting = meetings[0];
+    if (!meeting) throw new Error(`Meeting ${meeting_id} no encontrado`);
+
+    const transcript = transcriptsAll[0];
+    if (!transcript) throw new Error(`No hay transcript para meeting ${meeting_id}`);
+
+    logStep(steps, STEP_NAMES.LOAD, 'success', `Meeting: ${meeting.title}`, null);
+    await base44.entities.AutomationRun.update(automationRun.id, { steps });
+
+    // ── PASO 2: NORMALIZAR TRANSCRIPT (si no está hecho) ──
+    logStep(steps, STEP_NAMES.NORMALIZE, 'running', null, null);
+
+    let insights = transcript.extracted_insights;
+    if (!insights || !insights.decisions) {
+      const normalResult = await base44.functions.invoke('normalizeTranscript', {
+        transcript_id: transcript.id
+      });
+      insights = normalResult?.data?.insights;
     }
 
-    // 2. Create DeliveryRun
+    logStep(steps, STEP_NAMES.NORMALIZE, 'success',
+      `Extraídos: ${insights?.decisions?.length || 0} decisiones, ${insights?.actions?.length || 0} acciones`,
+      null);
+    await base44.entities.AutomationRun.update(automationRun.id, { steps });
+
+    // ── PASO 3: GENERAR INFORME ──
+    logStep(steps, STEP_NAMES.GENERATE, 'running', null, null);
+
+    const reportResult = await base44.functions.invoke('generateReport', {
+      meeting_id,
+      transcript_id: transcript.id
+    });
+
+    const contentMarkdown = reportResult?.data?.content_markdown;
+    if (!contentMarkdown) throw new Error('generateReport no devolvió contenido');
+
+    // Crear DeliveryRun y DeliveryVersion
     const deliveryRun = await base44.entities.DeliveryRun.create({
-      delivery_template_id: template_id,
+      delivery_template_id: reportResult?.data?.template_id || null,
       trigger_entity_type: 'Meeting',
       trigger_entity_id: meeting_id,
-      status: 'running',
-      steps_executed: []
-    });
-
-    const steps = [];
-
-    // Step 1: Extract context
-    steps.push({
-      step_name: 'extract_context',
-      status: 'success',
-      output: 'Context extracted',
-      timestamp: new Date().toISOString()
-    });
-
-    // Step 2: Generate report with LLM
-    let reportContent = '';
-    try {
-      const transcriptText = transcript[0]?.full_text || 'No transcript available';
-      
-      const prompt = `
-Genera un informe profesional basado en esta transcripción de reunión.
-
-REUNIÓN: ${meeting.title}
-OBJETIVO: ${meeting.objective || 'No especificado'}
-PARTICIPANTES: ${meeting.participants?.map(p => p.name).join(', ') || 'No especificado'}
-
-TRANSCRIPCIÓN:
-${transcriptText}
-
-Por favor, estructura el informe con las siguientes secciones (si aplican):
-1. Resumen Ejecutivo (3-5 líneas)
-2. Contexto y Objetivo
-3. Temas Tratados
-4. Acuerdos y Decisiones
-5. Acciones Comprometidas
-6. Riesgos Identificados
-7. Oportunidades
-8. Próximos Pasos
-
-Sé conciso, profesional y basate ÚNICAMENTE en lo que se menciona en la transcripción.
-      `;
-
-      const aiResponse = await base44.integrations.Core.InvokeLLM({
-        prompt,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            content: { type: 'string' }
-          }
-        }
-      });
-
-      reportContent = aiResponse.content || '';
-    } catch (err) {
-      steps.push({
-        step_name: 'generate_report',
-        status: 'failed',
-        error: err.message,
-        timestamp: new Date().toISOString()
-      });
-      throw err;
-    }
-
-    steps.push({
-      step_name: 'generate_report',
-      status: 'success',
-      output: `Report generated: ${reportContent.substring(0, 100)}...`,
-      timestamp: new Date().toISOString()
-    });
-
-    // Step 3: Create Report entity
-    const report = await base44.entities.Report.create({
-      meeting_id,
-      client_id: meeting.client_id,
-      project_id: meeting.project_id,
-      transcript_id: transcript[0]?.id || null,
-      template_id,
-      title: `Informe: ${meeting.title}`,
-      content_markdown: reportContent,
-      status: 'generated',
-      ai_metadata: {
-        model: 'gpt-4-turbo',
-        prompt_version: '1.0',
-        generated_at: new Date().toISOString(),
-        generated_by: user.email
-      }
-    });
-
-    steps.push({
-      step_name: 'create_report',
-      status: 'success',
-      output: `Report entity created: ${report.id}`,
-      timestamp: new Date().toISOString()
-    });
-
-    // Step 4: Extract tasks (optional)
-    let tasksCreated = [];
-    try {
-      const taskPrompt = `
-Extrae TODAS las tareas, compromisos y acciones mencionadas en esta transcripción.
-Retorna como JSON array.
-
-TRANSCRIPCIÓN:
-${transcript[0]?.full_text || 'No transcript'}
-
-Formato esperado:
-[
-  {
-    "title": "Título de la tarea",
-    "description": "Descripción breve",
-    "assignee": "Nombre de quien está asignado (si se menciona)",
-    "due_date": "Fecha sugerida (si se menciona)",
-    "priority": "low|medium|high"
-  }
-]
-
-Si no hay tareas claras, retorna array vacío [].
-      `;
-
-      const tasksResponse = await base44.integrations.Core.InvokeLLM({
-        prompt: taskPrompt,
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            tasks: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  title: { type: 'string' },
-                  description: { type: 'string' },
-                  assignee: { type: 'string' },
-                  due_date: { type: 'string' },
-                  priority: { type: 'string' }
-                }
-              }
-            }
-          }
-        }
-      });
-
-      if (tasksResponse.tasks && Array.isArray(tasksResponse.tasks)) {
-        for (const taskData of tasksResponse.tasks) {
-          const task = await base44.entities.Task.create({
-            client_id: meeting.client_id,
-            project_id: meeting.project_id,
-            meeting_id,
-            title: taskData.title,
-            description: taskData.description,
-            status: 'todo',
-            priority: taskData.priority || 'medium',
-            assignee_email: taskData.assignee || '',
-            due_date: taskData.due_date || null,
-            tags: ['auto-extracted']
-          });
-          tasksCreated.push(task.id);
-        }
-      }
-    } catch (err) {
-      console.log('Task extraction warning:', err.message);
-    }
-
-    steps.push({
-      step_name: 'extract_tasks',
-      status: 'success',
-      output: `${tasksCreated.length} tasks created`,
-      timestamp: new Date().toISOString()
-    });
-
-    // Step 5: Update DeliveryRun
-    const finalDeliveryRun = await base44.entities.DeliveryRun.update(deliveryRun.id, {
-      status: 'success',
-      output_content: reportContent,
-      steps_executed: steps,
-      total_time_ms: Date.now(),
+      status: 'review_pending',
+      output_content: contentMarkdown,
       ai_metadata: {
         model_used: 'gpt-4-turbo',
-        prompt_version: '1.0',
-        temperature: 0.6,
-        tokens_used: 0
+        prompt_version: '1',
+        generated_at: new Date().toISOString(),
+        generated_by: 'orchestrateMeetingDelivery'
       }
     });
 
-    // Step 6: Update Meeting status
-    await base44.entities.Meeting.update(meeting_id, {
-      status: 'report_generated'
+    await base44.entities.DeliveryVersion.create({
+      delivery_run_id: deliveryRun.id,
+      meeting_id,
+      version_number: 1,
+      content_markdown: contentMarkdown,
+      status: 'draft'
     });
+
+    logStep(steps, STEP_NAMES.GENERATE, 'success',
+      `Informe generado (${reportResult?.data?.word_count || '?'} palabras)`, null);
+    await base44.entities.AutomationRun.update(automationRun.id, {
+      steps,
+      delivery_run_id: deliveryRun.id
+    });
+
+    // ── PASO 4: SUBIR A GOOGLE DRIVE ──
+    logStep(steps, STEP_NAMES.UPLOAD_DRIVE, 'running', null, null);
+    let driveUrl = null;
+
+    try {
+      const driveResult = await base44.functions.invoke('syncGoogleDrive', {
+        delivery_run_id: deliveryRun.id,
+        meeting_id,
+        content_markdown: contentMarkdown,
+        meeting_title: meeting.title,
+        client_id: meeting.client_id,
+        project_id: meeting.project_id
+      });
+      driveUrl = driveResult?.data?.web_view_link;
+      if (driveUrl) {
+        await base44.entities.DeliveryRun.update(deliveryRun.id, {
+          output_file_url: driveUrl
+        });
+      }
+      logStep(steps, STEP_NAMES.UPLOAD_DRIVE, 'success', `Drive: ${driveUrl || 'subido'}`, null);
+    } catch (driveError) {
+      // Drive falla → no bloquear, continuar con email
+      logStep(steps, STEP_NAMES.UPLOAD_DRIVE, 'failed', null, driveError.message);
+    }
+    await base44.entities.AutomationRun.update(automationRun.id, { steps });
+
+    // ── PASO 5: ENVIAR EMAIL AL PM ──
+    logStep(steps, STEP_NAMES.SEND_EMAIL, 'running', null, null);
+
+    const [clients, projects] = await Promise.all([
+      meeting.client_id ? base44.entities.Client.filter({ id: meeting.client_id }) : Promise.resolve([]),
+      meeting.project_id ? base44.entities.Project.filter({ id: meeting.project_id }) : Promise.resolve([])
+    ]);
+    const client = clients[0];
+    const project = projects[0];
+
+    const meetingDate = meeting.date ? new Date(meeting.date).toLocaleDateString('es-ES') : 'N/A';
+    const reviewUrl = driveUrl || `[Ver informe en app]`;
+
+    const emailBody = `Hola ${user.full_name},
+
+El informe post-reunión de "${meeting.title}" está listo para tu revisión.
+
+📋 Reunión: ${meeting.title}
+📅 Fecha: ${meetingDate}
+🏢 Cliente: ${client?.name || 'N/A'}
+📁 Proyecto: ${project?.name || 'N/A'}
+
+${driveUrl ? `🔗 Ver en Google Drive: ${driveUrl}` : '📄 El informe ha sido generado y está disponible en el sistema.'}
+
+Por favor revísalo y apruébalo dentro de las próximas 24 horas.
+
+—
+Sistema DataGoal (automatizado)`;
+
+    await base44.integrations.Core.SendEmail({
+      to: meeting.organizer_email || user.email,
+      subject: `[${client?.name || 'DataGoal'}] Informe listo para revisión: ${meeting.title}`,
+      body: emailBody
+    });
+
+    logStep(steps, STEP_NAMES.SEND_EMAIL, 'success',
+      `Email enviado a ${meeting.organizer_email || user.email}`, null);
+
+    // ── PASO 6: FINALIZAR LOG ──
+    const duration = Date.now() - startTime;
+    await base44.entities.AutomationRun.update(automationRun.id, {
+      status: 'success',
+      steps,
+      duration_ms: duration,
+      summary: `Informe generado y enviado para "${meeting.title}". Drive: ${driveUrl ? 'OK' : 'FALLO (no bloqueante)'}`
+    });
+
+    // Actualizar Meeting status
+    await base44.entities.Meeting.update(meeting_id, { status: 'report_generated' });
 
     return Response.json({
       success: true,
-      delivery_run_id: finalDeliveryRun.id,
-      report_id: report.id,
-      tasks_created: tasksCreated,
-      steps
+      automation_run_id: automationRun.id,
+      delivery_run_id: deliveryRun.id,
+      drive_url: driveUrl,
+      duration_ms: duration
     });
 
   } catch (error) {
-    console.error('Orchestration error:', error);
-    return Response.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    if (automationRun) {
+      await base44.entities.AutomationRun.update(automationRun.id, {
+        status: 'failed',
+        steps,
+        duration_ms: Date.now() - startTime,
+        error_log: error.message
+      });
+    }
+    return Response.json({ error: error.message }, { status: 500 });
   }
 });
