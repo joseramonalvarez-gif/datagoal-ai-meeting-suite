@@ -36,19 +36,23 @@ Deno.serve(async (req) => {
     });
     const template = templates[0];
 
-    // Obtener meeting para contexto
-    const meetings = await base44.entities.Meeting.filter({ id: transcript.meeting_id });
-    const meeting = meetings[0] || {};
+    // Obtener meeting para contexto (can fail safely)
+    let meeting = {};
+    let client = null;
+    let project = null;
+    try {
+      const meetings = await base44.entities.Meeting.filter({ id: transcript.meeting_id });
+      meeting = meetings[0] || {};
 
-    const clients = meeting.client_id
-      ? await base44.entities.Client.filter({ id: meeting.client_id })
-      : [];
-    const client = clients[0];
-
-    const projects = meeting.project_id
-      ? await base44.entities.Project.filter({ id: meeting.project_id })
-      : [];
-    const project = projects[0];
+      const [clients, projects] = await Promise.all([
+        meeting.client_id ? base44.entities.Client.filter({ id: meeting.client_id }) : Promise.resolve([]),
+        meeting.project_id ? base44.entities.Project.filter({ id: meeting.project_id }) : Promise.resolve([])
+      ]);
+      client = clients[0] || null;
+      project = projects[0] || null;
+    } catch (_) {
+      // context not critical, proceed without it
+    }
 
     const prompt = template
       ? template.content
