@@ -287,10 +287,11 @@ The document is a meeting transcript or recording transcript.
     // If URL provided instead of text, fetch from Google Drive using connector
     if (!rawText && gmeetUrl.trim()) {
       try {
-        const { data } = await base44.functions.invoke('fetchGoogleDriveFile', { url: gmeetUrl });
-        rawText = data?.content || "";
+        const res = await base44.functions.invoke('fetchGoogleDriveFile', { url: gmeetUrl });
+        rawText = res.data?.content || res.data?.data?.content || "";
+        if (!rawText) throw new Error('No content returned');
       } catch (err) {
-        toast.error("Error al acceder a Google Drive. Asegúrate de que el enlace sea válido y accesible.");
+        toast.error("Error al acceder a Google Drive: " + (err.message || "Verifica que el enlace sea válido y accesible"));
         setGmeetProcessing(false);
         return;
       }
