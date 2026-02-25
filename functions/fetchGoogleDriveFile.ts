@@ -15,11 +15,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'URL is required' }, { status: 400 });
     }
 
-    // Get Gmail access token to use with Google APIs
-    const accessToken = await base44.asServiceRole.connectors.getAccessToken('gmail');
+    // Get Google Drive access token
+    const accessToken = await base44.asServiceRole.connectors.getAccessToken('googledrive');
     
     if (!accessToken) {
-      return Response.json({ error: 'Gmail connector not authorized. Please authorize Gmail access.' }, { status: 401 });
+      return Response.json({ error: 'Google Drive connector not authorized. Please authorize Google Drive access.' }, { status: 401 });
     }
 
     // Extract file ID from Google Drive URL

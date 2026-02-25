@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import mammoth from 'npm:mammoth@1.8.0';
 
 Deno.serve(async (req) => {
   try {
@@ -11,22 +12,37 @@ Deno.serve(async (req) => {
 
     let parsedText = '';
     let speakers = [];
-    let segments = [];
 
-    if (file_format === 'md' || file_format === 'txt') {
-      // Descargar y parsear markdown/txt
-      const res = await fetch(file_url);
-      parsedText = await res.text();
-      speakers = extractSpeakers(parsedText);
-    } else if (file_format === 'docx') {
-      // Aquí iría librería para parsear .docx (ej: mammoth)
-      // Por ahora, placeholder
-      return Response.json({ error: '.docx parsing not yet implemented (use mammoth library)' }, { status: 501 });
+    const res = await fetch(file_url);
+    if (!res.ok) {
+      return Response.json({ error: 'Could not download file from URL' }, { status: 400 });
     }
 
-    // Crear Transcript en BD
-    const meeting = meeting_id ? await base44.asServiceRole.entities.Meeting.filter({ id: meeting_id }) : null;
-    const meetingData = meeting && meeting.length > 0 ? meeting[0] : {};
+    if (file_format === 'md' || file_format === 'txt') {
+      parsedText = await res.text();
+    } else if (file_format === 'docx') {
+      const buffer = await res.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+      parsedText = result.value || '';
+    } else {
+      // fallback: try plain text
+      parsedText = await res.text();
+    }
+
+    if (!parsedText || parsedText.trim().length === 0) {
+      return Response.json({ error: 'Could not extract text from file' }, { status: 400 });
+    }
+
+    speakers = extractSpeakers(parsedText);
+
+    // Load meeting context safely
+    let meetingData = {};
+    if (meeting_id) {
+      try {
+        const meetings = await base44.asServiceRole.entities.Meeting.filter({ id: meeting_id });
+        meetingData = meetings[0] || {};
+      } catch (_) {}
+    }
 
     const transcript = await base44.asServiceRole.entities.Transcript.create({
       meeting_id: meeting_id || '',
@@ -35,11 +51,17 @@ Deno.serve(async (req) => {
       full_text: parsedText,
       source: 'manual_upload',
       status: 'completed',
-      segments: segments,
+      segments: [],
       has_diarization: speakers.length > 1,
     });
 
-    // Crear log de importación
+    // Update meeting status
+    if (meeting_id && meetingData.id) {
+      try {
+        await base44.asServiceRole.entities.Meeting.update(meetingData.id, { status: 'transcribed' });
+      } catch (_) {}
+    }
+
     await base44.asServiceRole.entities.TranscriptImportLog.create({
       source: 'manual_upload',
       source_file_url: file_url,
@@ -50,6 +72,7 @@ Deno.serve(async (req) => {
       file_format: file_format,
       has_timestamps: false,
       has_diarization: speakers.length > 1,
+      imported_at: new Date().toISOString(),
     });
 
     return Response.json({
@@ -64,12 +87,12 @@ Deno.serve(async (req) => {
 });
 
 function extractSpeakers(text) {
-  // Regex simple: "Speaker Name:" o "Person:"
-  const regex = /^([A-Za-z\s]+):\s/gm;
+  const regex = /^([A-ZÁÉÍÓÚÜÑa-záéíóúüñ][A-Za-záéíóúüñ\s]{0,30}):\s/gm;
   const speakers = new Set();
   let match;
   while ((match = regex.exec(text)) !== null) {
-    speakers.add(match[1].trim());
+    const name = match[1].trim();
+    if (name.length > 1 && name.length < 40) speakers.add(name);
   }
   return Array.from(speakers);
 }

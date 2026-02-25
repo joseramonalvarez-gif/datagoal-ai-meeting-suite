@@ -18,7 +18,7 @@ export default function TranscriptUploadModal({ open, onOpenChange, meeting_id, 
     try {
       // Upload file
       const uploadRes = await base44.integrations.Core.UploadFile({ file });
-      const fileUrl = uploadRes.data.file_url;
+      const fileUrl = uploadRes.file_url;
 
       // Parse transcript
       const parseRes = await base44.functions.invoke('parseTranscriptFile', {
