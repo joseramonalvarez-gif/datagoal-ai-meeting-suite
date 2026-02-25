@@ -573,8 +573,8 @@ ${report.content_markdown?.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>').r
         <div className="flex flex-wrap gap-2">
            <ActionButton icon={Upload} label="Subir audio" onClick={handleUploadAudio} action="audio"
              title={`Formatos: MP3, WAV, M4A, OGG, WEBM, FLAC, AAC, OPUS (máx ${MAX_AUDIO_MB}MB)`} />
-           <ActionButton icon={FileText} label="Subir transcripción" onClick={() => setShowTranscriptUpload(true)} action="transcript_upload"
-             title={`Formatos: MARKDOWN, TXT, DOCX (máx ${MAX_DOC_MB}MB)`} />
+           <ActionButton icon={FileText} label="Subir transcripción" onClick={handleUploadTranscript} action="transcript_upload"
+             title={`Formatos: MARKDOWN, TXT, DOCX, PDF, SRT, VTT (máx ${MAX_DOC_MB}MB)`} />
           <ActionButton icon={Video} label="Google Meet" onClick={() => setShowGMeet(true)} action="gmeet_open"
             title="Importar transcripción directa de Google Meet" />
           <ActionButton icon={Mic} label="Transcribir" onClick={handleTranscribe} action="transcribe"
