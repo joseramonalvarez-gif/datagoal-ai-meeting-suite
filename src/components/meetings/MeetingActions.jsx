@@ -56,55 +56,15 @@ export default function MeetingActions({ meeting, onUpdate }) {
 
   // ─── Core transcription logic ───────────────────────────────────────────────
   const doTranscribeFromUrl = async (audioUrl, meetingId, clientId, projectId) => {
-    // Use InvokeLLM with file_urls to transcribe audio with speaker identification and timestamps
-    const result = await base44.integrations.Core.InvokeLLM({
-      prompt: `Transcribe this audio COMPLETELY and LITERALLY.
-- Identify all different speakers (label them Speaker 1, Speaker 2, etc. or by name if identifiable)
-- Provide timestamps in MM:SS format
-- Transcribe word for word, include all filler words, pauses
-- Return JSON with segments (start_time, end_time, speaker_id, speaker_label, text_literal) and full_text`,
-      file_urls: [audioUrl],
-      response_json_schema: {
-        type: "object",
-        properties: {
-          segments: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                start_time: { type: "string" },
-                end_time: { type: "string" },
-                speaker_id: { type: "string" },
-                speaker_label: { type: "string" },
-                text_literal: { type: "string" }
-              }
-            }
-          },
-          full_text: { type: "string" }
-        }
-      }
-    });
-
-    if (!result || (!result.full_text && (!result.segments || result.segments.length === 0))) {
-      throw new Error("No se pudo extraer texto del audio. Verifica que el archivo tenga voz audible.");
-    }
-
-    const existingTranscripts = await base44.entities.Transcript.filter({ meeting_id: meetingId });
-    const nextVersion = existingTranscripts.length + 1;
-    await base44.entities.Transcript.create({
+    // Route through the audioTranscriber backend function which handles audio correctly
+    const res = await base44.functions.invoke('audioTranscriber', {
       meeting_id: meetingId,
-      client_id: clientId,
-      project_id: projectId,
-      version: nextVersion,
-      status: result.segments?.length > 0 ? "completed" : "no_timeline",
-      has_timeline: result.segments?.length > 0,
-      has_diarization: result.segments?.some(s => s.speaker_id && s.speaker_id !== "speaker_1") || false,
-      segments: result.segments || [],
-      full_text: result.full_text || result.segments?.map(s => s.text_literal).join(" ") || "",
-      source: "audio_transcription",
-      ai_metadata: { model: "gemini", generated_at: new Date().toISOString() }
+      audio_file_url: audioUrl,
+      audio_source: 'audio_transcription',
     });
-    await base44.entities.Meeting.update(meetingId, { status: "transcribed" });
+    if (!res.data?.success) {
+      throw new Error(res.data?.error || "No se pudo transcribir el audio. Verifica que el archivo tenga voz audible.");
+    }
   };
 
   // ─── Upload Audio ────────────────────────────────────────────────────────────
