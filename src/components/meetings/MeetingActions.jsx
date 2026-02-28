@@ -137,45 +137,64 @@ export default function MeetingActions({ meeting, onUpdate }) {
         return;
       }
 
+      const ext = getExt(file.name);
       setProcessing("transcript_upload");
       toast.info("Subiendo documento y extrayendo transcripción...");
 
       try {
+        // Upload the raw file first
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
 
-        // Use InvokeLLM with file_urls — much more reliable than ExtractDataFromUploadedFile for docx/pdf
-        const result = await base44.integrations.Core.InvokeLLM({
-          prompt: `Extract the full transcript from this document.
-The document is a meeting transcript or recording transcript.
-- Extract ALL text content completely and literally
-- If there are speaker labels/timestamps, preserve them as structured segments
-- If it's a plain text document, create segments splitting by speaker turns or paragraphs
-- Return the full_text as a single string of all content
-- For segments, identify: start_time (or empty if none), end_time (or empty), speaker_label, text_literal`,
-          file_urls: [file_url],
-          response_json_schema: {
-            type: "object",
-            properties: {
-              full_text: { type: "string" },
-              segments: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    start_time: { type: "string" },
-                    end_time: { type: "string" },
-                    speaker_id: { type: "string" },
-                    speaker_label: { type: "string" },
-                    text_literal: { type: "string" }
+        // Route DOCX through backend (mammoth), everything else through LLM
+        let fullText = "";
+        let segments = [];
+
+        if (ext === "docx" || ext === "doc") {
+          // Backend handles DOCX with mammoth - avoids SDK unsupported file type error
+          const res = await base44.functions.invoke('parseTranscriptFile', {
+            file_url,
+            file_format: ext === "doc" ? "docx" : ext,
+            meeting_id: meeting.id,
+          });
+          if (!res.data?.success) {
+            throw new Error(res.data?.error || "Error al procesar el documento DOCX");
+          }
+          // parseTranscriptFile already creates the Transcript entity — done
+          toast.success("✅ Transcripción extraída e importada correctamente");
+          setProcessing(null);
+          onUpdate();
+          return;
+        } else {
+          // TXT, MD, SRT, VTT — read as plain text via LLM
+          const result = await base44.integrations.Core.InvokeLLM({
+            prompt: `Extract the full transcript from this document. 
+- Extract ALL text content completely and literally.
+- If there are speaker labels/timestamps, preserve them.
+- Return full_text as a single string and segments if identifiable.`,
+            file_urls: [file_url],
+            response_json_schema: {
+              type: "object",
+              properties: {
+                full_text: { type: "string" },
+                segments: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      start_time: { type: "string" },
+                      end_time: { type: "string" },
+                      speaker_id: { type: "string" },
+                      speaker_label: { type: "string" },
+                      text_literal: { type: "string" }
+                    }
                   }
                 }
               }
             }
-          }
-        });
-
-        const hasSegments = result?.segments?.length > 0;
-        const fullText = result?.full_text || result?.segments?.map(s => `${s.speaker_label ? s.speaker_label + ": " : ""}${s.text_literal}`).join("\n") || "";
+          });
+          fullText = result?.full_text || result?.segments?.map(s => `${s.speaker_label ? s.speaker_label + ": " : ""}${s.text_literal}`).join("\n") || "";
+          segments = result?.segments || [];
+        }
 
         if (!fullText) {
           toast.error("No se pudo extraer texto del documento. Verifica el formato del archivo.");
@@ -185,32 +204,29 @@ The document is a meeting transcript or recording transcript.
         }
 
         const existingTranscripts = await base44.entities.Transcript.filter({ meeting_id: meeting.id });
-        const nextVersion = existingTranscripts.length + 1;
-
         await base44.entities.Transcript.create({
           meeting_id: meeting.id,
           client_id: meeting.client_id,
           project_id: meeting.project_id,
-          version: nextVersion,
-          status: hasSegments ? "completed" : "no_timeline",
-          has_timeline: hasSegments,
-          has_diarization: hasSegments && result.segments.some(s => s.speaker_label && s.speaker_label !== result.segments[0]?.speaker_label),
-          segments: result.segments || [],
+          version: existingTranscripts.length + 1,
+          status: segments.length > 0 ? "completed" : "no_timeline",
+          has_timeline: segments.length > 0,
+          has_diarization: segments.some(s => s.speaker_label && s.speaker_label !== segments[0]?.speaker_label),
+          segments,
           full_text: fullText,
           source: "manual_upload",
-          ai_metadata: { model: "gemini", generated_at: new Date().toISOString() }
+          ai_metadata: { model: "llm", generated_at: new Date().toISOString() }
         });
 
         await base44.entities.Meeting.update(meeting.id, {
           source_type: "transcript_upload", status: "transcribed"
         });
         toast.success("✅ Transcripción extraída e importada correctamente");
-        setProcessing(null);
         onUpdate();
       } catch (error) {
         toast.error(error.message || "Error al procesar la transcripción");
-        setProcessing(null);
       } finally {
+        setProcessing(null);
         input.removeEventListener("change", handleChange);
       }
     };
