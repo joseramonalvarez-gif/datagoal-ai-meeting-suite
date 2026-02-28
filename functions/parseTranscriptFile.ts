@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
       } else {
         return Response.json({ error: 'Missing file_base64 or file_url' }, { status: 400 });
       }
-      const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+      const result = await mammoth.extractRawText({ buffer: Buffer.from(buffer) });
       parsedText = result.value || '';
     } else if (file_url) {
       const res = await fetch(file_url);
