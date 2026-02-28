@@ -37,10 +37,10 @@ Deno.serve(async (req) => {
     // Initialize automation run record
     const automationRun = await base44.asServiceRole.entities.AutomationRun.create({
       meeting_id,
-      automation_type: 'post_transcription',
+      automation_type: 'post_meeting',
       trigger_event: 'meeting_transcribed',
       status: 'running',
-      actions_executed: []
+      steps: []
     });
 
     const results = {
@@ -142,12 +142,15 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.entities.AutomationRun.update(automationRun.id, {
       status: results.tasks_created.length > 0 || results.follow_ups_created.length > 0 ? 'success' : 'partial',
-      actions_executed: results.actions_executed,
-      tasks_created: results.tasks_created,
-      notifications_sent: results.notifications_sent,
-      follow_ups_created: results.follow_ups_created,
+      steps: results.actions_executed.map((a, i) => ({
+        step_name: a.action_name,
+        status: a.status === 'success' ? 'success' : 'failed',
+        output_summary: a.result ? JSON.stringify(a.result) : undefined,
+        error: a.error,
+        finished_at: new Date().toISOString(),
+      })),
       summary: results.summary,
-      executed_at: new Date().toISOString()
+      triggered_by: user.email,
     });
 
     return Response.json({

@@ -227,10 +227,15 @@ The document is a meeting transcript or recording transcript.
     }
     setProcessing("transcribe");
     toast.info("Transcribiendo audio...");
-    await doTranscribeFromUrl(meeting.audio_url, meeting.id, meeting.client_id, meeting.project_id);
-    toast.success("✅ Transcripción completada");
-    setProcessing(null);
-    onUpdate();
+    try {
+      await doTranscribeFromUrl(meeting.audio_url, meeting.id, meeting.client_id, meeting.project_id);
+      toast.success("✅ Transcripción completada");
+      onUpdate();
+    } catch (error) {
+      toast.error(error.message || "Error al transcribir el audio");
+    } finally {
+      setProcessing(null);
+    }
   };
 
   // ─── Google Meet transcript import ─────────────────────────────────────────
@@ -330,6 +335,7 @@ ${rawText}`,
   // ─── Generate Report ─────────────────────────────────────────────────────────
   const handleGenerateReport = async () => {
    setProcessing("report");
+   try {
    const [transcripts, existingTasks, templates, gptConfigs] = await Promise.all([
      base44.entities.Transcript.filter({ meeting_id: meeting.id }, '-version', 1),
      base44.entities.Task.filter({ meeting_id: meeting.id }, '-created_date'),
@@ -397,8 +403,12 @@ ${rawText}`,
 
    await base44.entities.Meeting.update(meeting.id, { status: "report_generated" });
    toast.success("✅ Informe generado correctamente");
-   setProcessing(null);
    onUpdate();
+   } catch (error) {
+     toast.error(error.message || "Error al generar el informe");
+   } finally {
+     setProcessing(null);
+   }
   };
 
   // ─── Extract Tasks ────────────────────────────────────────────────────────────

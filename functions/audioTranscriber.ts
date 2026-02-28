@@ -26,9 +26,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: `Could not download audio file: ${audioRes.statusText}` }, { status: 400 });
     }
 
-    // Determine filename/extension from URL for Whisper
+    // Determine filename/extension from URL for Whisper (strip query strings)
     const urlPath = new URL(audio_file_url).pathname;
-    const ext = urlPath.split('.').pop().toLowerCase() || 'mp3';
+    const ext = urlPath.split('.').pop().toLowerCase().replace(/[?#].*/, '') || 'mp3';
     const supportedExts = ['mp3', 'mp4', 'm4a', 'mpeg', 'mpga', 'wav', 'webm', 'ogg', 'flac'];
     if (!supportedExts.includes(ext)) {
       return Response.json({ error: `Unsupported audio format: .${ext}. Supported: ${supportedExts.join(', ')}` }, { status: 400 });
