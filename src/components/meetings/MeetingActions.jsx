@@ -148,7 +148,14 @@ export default function MeetingActions({ meeting, onUpdate }) {
         if (ext === "docx" || ext === "doc") {
           // DOCX: read as ArrayBuffer in browser, send base64 to backend for mammoth parsing
           const arrayBuffer = await file.arrayBuffer();
-          const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+          // Use chunked encoding to avoid stack overflow on large files
+          const bytes = new Uint8Array(arrayBuffer);
+          let binary = "";
+          const chunkSize = 8192;
+          for (let i = 0; i < bytes.length; i += chunkSize) {
+            binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+          }
+          const base64 = btoa(binary);
           const res = await base44.functions.invoke('parseTranscriptFile', {
             file_base64: base64,
             file_format: "docx",
