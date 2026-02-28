@@ -30,8 +30,7 @@ Deno.serve(async (req) => {
     const transcript = transcripts[0];
     if (!transcript) return Response.json({ error: 'Transcript no encontrado' }, { status: 404 });
 
-    const template = templates[0];
-    if (!template) return Response.json({ error: 'DeliveryTemplate no encontrado' }, { status: 404 });
+    const template = templates[0]; // can be null — we'll build a default prompt
 
     // Cargar client, project y prompt template
     const [clients, projects, promptTemplates] = await Promise.all([
@@ -69,10 +68,14 @@ Deno.serve(async (req) => {
           .replace('{{actions}}', actions)
           .replace('{{key_topics}}', keyTopics)
           .replace('{{tone}}', template.tone || 'ejecutivo')
-      : `Genera un informe ejecutivo post-reunión de "${meeting.title}" para el cliente ${client.name}. 
-         Basado en estas decisiones: ${decisions}. 
-         Acciones: ${actions}. 
-         Formato markdown con: Resumen Ejecutivo, Decisiones, Plan de Acción, Riesgos, Próximos Pasos.`;
+      : `Genera un informe ejecutivo post-reunión de "${meeting.title}" para el cliente ${client.name || 'Cliente'}.
+Fecha: ${meetingDate}
+Participantes: ${participants}
+Objetivo: ${meeting.objective || 'No especificado'}
+
+${transcript.full_text ? `TRANSCRIPCIÓN:\n${transcript.full_text.substring(0, 12000)}` : `Decisiones: ${decisions}\nAcciones: ${actions}`}
+
+Genera el informe en Markdown con: Resumen Ejecutivo, Temas Tratados, Decisiones, Plan de Acción, Riesgos, Próximos Pasos. Tono ejecutivo, en español.`;
 
     const content = await base44.integrations.Core.InvokeLLM({
       prompt
@@ -82,21 +85,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'El LLM no generó contenido suficiente' }, { status: 500 });
     }
 
-    // Actualizar usage count
+    // Actualizar usage count (best-effort)
     if (promptTemplate) {
       await base44.entities.PromptTemplate.update(promptTemplate.id, {
         usage_count: (promptTemplate.usage_count || 0) + 1
-      });
+      }).catch(() => {});
     }
-    await base44.entities.DeliveryTemplate.update(template.id, {
-      usage_count: (template.usage_count || 0) + 1
-    });
+    if (template) {
+      await base44.entities.DeliveryTemplate.update(template.id, {
+        usage_count: (template.usage_count || 0) + 1
+      }).catch(() => {});
+    }
 
     return Response.json({
       success: true,
       content_markdown: content,
       meeting_id,
-      template_used: template.name,
+      template_used: template?.name || 'default',
       word_count: content.split(' ').length
     });
 
