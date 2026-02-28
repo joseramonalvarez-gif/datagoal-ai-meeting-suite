@@ -44,11 +44,15 @@ export default function MeetingActions({ meeting, onUpdate }) {
   const [transcript, setTranscript] = useState(null);
   const [showTranscriptUpload, setShowTranscriptUpload] = useState(false);
 
-  useEffect(() => {
+  const loadTranscript = () => {
     if (!meeting?.id) return;
     base44.entities.Transcript.filter({ meeting_id: meeting.id }, '-version', 1).then(ts => {
-      if (ts[0]) setTranscript(ts[0]);
+      setTranscript(ts[0] || null);
     });
+  };
+
+  useEffect(() => {
+    loadTranscript();
   }, [meeting?.id, meeting?.status]);
 
   const isTranscribed = ["transcribed", "report_generated", "approved", "closed"].includes(meeting?.status) || !!transcript;
