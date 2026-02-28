@@ -107,6 +107,7 @@ export default function MeetingActions({ meeting, onUpdate }) {
         await doTranscribeFromUrl(file_url, meeting.id, meeting.client_id, meeting.project_id);
         toast.success("✅ Transcripción completada");
         setProcessing(null);
+        loadTranscript();
         onUpdate();
       } catch (error) {
         toast.error(error.message || "Error al procesar el audio");
