@@ -52,7 +52,7 @@ export default function MeetingActions({ meeting, onUpdate }) {
     }
   }, [meeting?.id, meeting?.status]);
 
-  const isTranscribed = ["transcribed", "report_generated", "approved", "closed"].includes(meeting?.status);
+  const isTranscribed = ["transcribed", "report_generated", "approved", "closed"].includes(meeting?.status) || !!transcript;
 
   // ─── Core transcription logic ───────────────────────────────────────────────
   const doTranscribeFromUrl = async (audioUrl, meetingId, clientId, projectId) => {
