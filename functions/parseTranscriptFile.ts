@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { extractRawText } from 'npm:mammoth@1.8.0/mammoth.browser.js';
 
 Deno.serve(async (req) => {
   try {
@@ -13,32 +14,24 @@ Deno.serve(async (req) => {
     let parsedText = '';
 
     if (file_format === 'docx' || file_format === 'doc') {
-      // Use mammoth via a different approach - convert to Uint8Array and pass as path via tmp file
-      let bytes;
+      let arrayBuffer;
       if (file_base64) {
         const binaryStr = atob(file_base64);
-        bytes = new Uint8Array(binaryStr.length);
+        const bytes = new Uint8Array(binaryStr.length);
         for (let i = 0; i < binaryStr.length; i++) {
           bytes[i] = binaryStr.charCodeAt(i);
         }
+        arrayBuffer = bytes.buffer;
       } else if (file_url) {
         const res = await fetch(file_url);
         if (!res.ok) return Response.json({ error: 'Could not download file' }, { status: 400 });
-        bytes = new Uint8Array(await res.arrayBuffer());
+        arrayBuffer = await res.arrayBuffer();
       } else {
         return Response.json({ error: 'Missing file_base64 or file_url' }, { status: 400 });
       }
 
-      // Write to tmp file and use mammoth with path
-      const tmpPath = `/tmp/transcript_${Date.now()}.docx`;
-      await Deno.writeFile(tmpPath, bytes);
-
-      const mammoth = await import('npm:mammoth@1.8.0');
-      const result = await mammoth.default.extractRawText({ path: tmpPath });
+      const result = await extractRawText({ arrayBuffer });
       parsedText = result.value || '';
-
-      // Cleanup
-      try { await Deno.remove(tmpPath); } catch (_) {}
 
     } else if (file_url) {
       const res = await fetch(file_url);
@@ -63,11 +56,17 @@ Deno.serve(async (req) => {
       } catch (_) {}
     }
 
+    // Truncate full_text if too large (keep first 50000 chars)
+    const MAX_TEXT = 50000;
+    const truncatedText = parsedText.length > MAX_TEXT 
+      ? parsedText.substring(0, MAX_TEXT) + '\n\n[... texto truncado por límite de tamaño ...]'
+      : parsedText;
+
     const transcript = await base44.asServiceRole.entities.Transcript.create({
       meeting_id: meeting_id || '',
       client_id: meetingData.client_id || '',
       project_id: meetingData.project_id || '',
-      full_text: parsedText,
+      full_text: truncatedText,
       source: 'manual_upload',
       status: 'completed',
       segments: [],
