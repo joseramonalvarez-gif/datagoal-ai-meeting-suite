@@ -169,6 +169,7 @@ export default function MeetingActions({ meeting, onUpdate }) {
           }
           toast.success("✅ Transcripción extraída e importada correctamente");
           setProcessing(null);
+          loadTranscript();
           onUpdate();
           return;
         } else if (ext === "txt" || ext === "md" || ext === "srt" || ext === "vtt" || ext === "rtf") {
