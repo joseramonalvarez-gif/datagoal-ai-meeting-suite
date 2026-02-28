@@ -357,6 +357,7 @@ ${rawText}`,
     setGmeetUrl("");
     setGmeetProcessing(false);
     setShowGMeet(false);
+    loadTranscript();
     onUpdate();
   };
 
