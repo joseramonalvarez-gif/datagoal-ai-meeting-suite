@@ -1,5 +1,4 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import mammoth from 'npm:mammoth@1.8.0';
 
 Deno.serve(async (req) => {
   try {
@@ -13,26 +12,34 @@ Deno.serve(async (req) => {
 
     let parsedText = '';
 
-    if (file_format === 'docx') {
-      let buffer;
+    if (file_format === 'docx' || file_format === 'doc') {
+      // Use mammoth via a different approach - convert to Uint8Array and pass as path via tmp file
+      let bytes;
       if (file_base64) {
-        // Decode base64 to ArrayBuffer
         const binaryStr = atob(file_base64);
-        const bytes = new Uint8Array(binaryStr.length);
+        bytes = new Uint8Array(binaryStr.length);
         for (let i = 0; i < binaryStr.length; i++) {
           bytes[i] = binaryStr.charCodeAt(i);
         }
-        buffer = bytes.buffer;
       } else if (file_url) {
         const res = await fetch(file_url);
         if (!res.ok) return Response.json({ error: 'Could not download file' }, { status: 400 });
-        buffer = await res.arrayBuffer();
+        bytes = new Uint8Array(await res.arrayBuffer());
       } else {
         return Response.json({ error: 'Missing file_base64 or file_url' }, { status: 400 });
       }
-      const uint8 = new Uint8Array(buffer);
-      const result = await mammoth.extractRawText({ arrayBuffer: uint8.buffer });
+
+      // Write to tmp file and use mammoth with path
+      const tmpPath = `/tmp/transcript_${Date.now()}.docx`;
+      await Deno.writeFile(tmpPath, bytes);
+
+      const mammoth = await import('npm:mammoth@1.8.0');
+      const result = await mammoth.default.extractRawText({ path: tmpPath });
       parsedText = result.value || '';
+
+      // Cleanup
+      try { await Deno.remove(tmpPath); } catch (_) {}
+
     } else if (file_url) {
       const res = await fetch(file_url);
       if (!res.ok) return Response.json({ error: 'Could not download file' }, { status: 400 });
