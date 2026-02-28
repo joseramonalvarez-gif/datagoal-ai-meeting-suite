@@ -45,11 +45,10 @@ export default function MeetingActions({ meeting, onUpdate }) {
   const [showTranscriptUpload, setShowTranscriptUpload] = useState(false);
 
   useEffect(() => {
-    if (["transcribed", "report_generated", "approved", "closed"].includes(meeting?.status)) {
-      base44.entities.Transcript.filter({ meeting_id: meeting.id }, '-version', 1).then(ts => {
-        if (ts[0]) setTranscript(ts[0]);
-      });
-    }
+    if (!meeting?.id) return;
+    base44.entities.Transcript.filter({ meeting_id: meeting.id }, '-version', 1).then(ts => {
+      if (ts[0]) setTranscript(ts[0]);
+    });
   }, [meeting?.id, meeting?.status]);
 
   const isTranscribed = ["transcribed", "report_generated", "approved", "closed"].includes(meeting?.status) || !!transcript;
