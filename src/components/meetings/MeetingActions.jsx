@@ -142,35 +142,34 @@ export default function MeetingActions({ meeting, onUpdate }) {
       toast.info("Subiendo documento y extrayendo transcripción...");
 
       try {
-        // Upload the raw file first
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-
-        // Route DOCX through backend (mammoth), everything else through LLM
         let fullText = "";
         let segments = [];
 
         if (ext === "docx" || ext === "doc") {
-          // Backend handles DOCX with mammoth - avoids SDK unsupported file type error
+          // DOCX: read as ArrayBuffer in browser, send base64 to backend for mammoth parsing
+          const arrayBuffer = await file.arrayBuffer();
+          const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
           const res = await base44.functions.invoke('parseTranscriptFile', {
-            file_url,
-            file_format: ext === "doc" ? "docx" : ext,
+            file_base64: base64,
+            file_format: "docx",
             meeting_id: meeting.id,
           });
           if (!res.data?.success) {
             throw new Error(res.data?.error || "Error al procesar el documento DOCX");
           }
-          // parseTranscriptFile already creates the Transcript entity — done
           toast.success("✅ Transcripción extraída e importada correctamente");
           setProcessing(null);
           onUpdate();
           return;
+        } else if (ext === "txt" || ext === "md" || ext === "srt" || ext === "vtt" || ext === "rtf") {
+          // Plain text formats: read directly in browser, no upload needed
+          fullText = await file.text();
+          segments = [];
         } else {
-          // TXT, MD, SRT, VTT — read as plain text via LLM
+          // PDF and others: upload and use LLM
+          const { file_url } = await base44.integrations.Core.UploadFile({ file });
           const result = await base44.integrations.Core.InvokeLLM({
-            prompt: `Extract the full transcript from this document. 
-- Extract ALL text content completely and literally.
-- If there are speaker labels/timestamps, preserve them.
-- Return full_text as a single string and segments if identifiable.`,
+            prompt: `Extract the full transcript text from this document. Return all the text content as full_text.`,
             file_urls: [file_url],
             response_json_schema: {
               type: "object",
@@ -183,7 +182,6 @@ export default function MeetingActions({ meeting, onUpdate }) {
                     properties: {
                       start_time: { type: "string" },
                       end_time: { type: "string" },
-                      speaker_id: { type: "string" },
                       speaker_label: { type: "string" },
                       text_literal: { type: "string" }
                     }
@@ -192,7 +190,7 @@ export default function MeetingActions({ meeting, onUpdate }) {
               }
             }
           });
-          fullText = result?.full_text || result?.segments?.map(s => `${s.speaker_label ? s.speaker_label + ": " : ""}${s.text_literal}`).join("\n") || "";
+          fullText = result?.full_text || "";
           segments = result?.segments || [];
         }
 
