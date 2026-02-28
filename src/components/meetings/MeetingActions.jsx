@@ -231,6 +231,7 @@ export default function MeetingActions({ meeting, onUpdate }) {
           source_type: "transcript_upload", status: "transcribed"
         });
         toast.success("✅ Transcripción extraída e importada correctamente");
+        loadTranscript();
         onUpdate();
       } catch (error) {
         toast.error(error.message || "Error al procesar la transcripción");
