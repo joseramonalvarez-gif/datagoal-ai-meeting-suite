@@ -1,0 +1,42 @@
+{
+  "name": "QaCheck",
+  "type": "object",
+  "properties": {
+    "qa_run_id": {
+      "type": "string"
+    },
+    "check_code": {
+      "type": "string"
+    },
+    "check_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PASSED",
+        "FAILED",
+        "SKIPPED",
+        "RUNNING"
+      ],
+      "default": "RUNNING"
+    },
+    "duration_ms": {
+      "type": "number"
+    },
+    "evidence": {
+      "type": "string"
+    },
+    "error_detail": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "qa_run_id",
+    "check_code"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "name": "TimeEntry",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "user_email": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "duration_minutes": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    },
+    "billable": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "client_id",
+    "project_id",
+    "user_email",
+    "duration_minutes"
+  ]
+}

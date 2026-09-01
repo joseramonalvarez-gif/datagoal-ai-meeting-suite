@@ -1,0 +1,179 @@
+{
+  "name": "MeetingInsights",
+  "type": "object",
+  "properties": {
+    "meeting_id": {
+      "type": "string",
+      "description": "Referencia a la reuni\u00f3n"
+    },
+    "transcript_id": {
+      "type": "string",
+      "description": "Referencia a la transcripci\u00f3n"
+    },
+    "client_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "gpt_models_used": {
+      "type": "array",
+      "description": "GPT models utilizados en este an\u00e1lisis",
+      "items": {
+        "type": "string"
+      }
+    },
+    "insights_by_model": {
+      "type": "object",
+      "description": "Insights organizados por modelo GPT",
+      "additionalProperties": true
+    },
+    "risks": {
+      "type": "array",
+      "description": "Riesgos clave identificados",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "mitigation": {
+            "type": "string"
+          },
+          "source_model": {
+            "type": "string",
+            "description": "Modelo que gener\u00f3 este insight"
+          }
+        }
+      }
+    },
+    "opportunities": {
+      "type": "array",
+      "description": "Oportunidades identificadas",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "impact": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "next_steps": {
+            "type": "string"
+          },
+          "source_model": {
+            "type": "string",
+            "description": "Modelo que gener\u00f3 este insight"
+          }
+        }
+      }
+    },
+    "strategic_recommendations": {
+      "type": "array",
+      "description": "Recomendaciones estrat\u00e9gicas",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "timeline": {
+            "type": "string"
+          },
+          "source_model": {
+            "type": "string",
+            "description": "Modelo que gener\u00f3 este insight"
+          }
+        }
+      }
+    },
+    "copy_content": {
+      "type": "object",
+      "description": "Contenido generado por GPT de copywriting",
+      "properties": {
+        "sales_copy": {
+          "type": "string"
+        },
+        "articles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_model": {
+          "type": "string"
+        }
+      }
+    },
+    "key_metrics": {
+      "type": "object",
+      "description": "M\u00e9tricas clave extra\u00eddas",
+      "properties": {
+        "sentiment": {
+          "type": "string"
+        },
+        "decision_count": {
+          "type": "number"
+        },
+        "action_items_count": {
+          "type": "number"
+        }
+      }
+    },
+    "analysis_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "analyzing",
+        "completed",
+        "error"
+      ],
+      "default": "pending"
+    },
+    "analysis_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Mensaje de error si falla el an\u00e1lisis"
+    }
+  },
+  "required": [
+    "meeting_id",
+    "client_id",
+    "project_id"
+  ]
+}

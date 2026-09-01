@@ -1,0 +1,127 @@
+{
+  "name": "SavedQuery",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre de la consulta guardada"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n de qu\u00e9 obtiene esta consulta"
+    },
+    "query_sql": {
+      "type": "string",
+      "description": "C\u00f3digo SQL de la consulta"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags para categorizaci\u00f3n"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "meetings",
+        "transcriptions",
+        "deliveries",
+        "tasks",
+        "analytics",
+        "custom"
+      ],
+      "description": "Categor\u00eda de la consulta"
+    },
+    "is_scheduled": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u00bfSe ejecuta autom\u00e1ticamente?"
+    },
+    "schedule_frequency": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly",
+        "never"
+      ],
+      "default": "never",
+      "description": "Frecuencia de ejecuci\u00f3n si est\u00e1 programada"
+    },
+    "schedule_day_of_week": {
+      "type": "number",
+      "description": "D\u00eda de la semana para ejecuci\u00f3n semanal (0=domingo)"
+    },
+    "schedule_day_of_month": {
+      "type": "number",
+      "description": "D\u00eda del mes para ejecuci\u00f3n mensual"
+    },
+    "schedule_time": {
+      "type": "string",
+      "description": "Hora de ejecuci\u00f3n (HH:MM)"
+    },
+    "last_executed": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u00daltima ejecuci\u00f3n"
+    },
+    "last_result_count": {
+      "type": "number",
+      "description": "Cantidad de filas en \u00faltima ejecuci\u00f3n"
+    },
+    "is_shared": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u00bfCompartida con otros usuarios?"
+    },
+    "shared_with": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Emails de usuarios con acceso"
+    },
+    "author_email": {
+      "type": "string",
+      "description": "Usuario que cre\u00f3 la consulta"
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Permisos granulares",
+      "properties": {
+        "can_view": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Emails de usuarios/grupos con permiso de lectura"
+        },
+        "can_edit": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Emails de usuarios/grupos con permiso de edici\u00f3n"
+        },
+        "can_execute": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Emails de usuarios/grupos con permiso de ejecuci\u00f3n"
+        },
+        "is_private": {
+          "type": "boolean",
+          "default": true,
+          "description": "Solo visible al propietario"
+        }
+      }
+    }
+  },
+  "required": [
+    "name",
+    "query_sql",
+    "category"
+  ]
+}

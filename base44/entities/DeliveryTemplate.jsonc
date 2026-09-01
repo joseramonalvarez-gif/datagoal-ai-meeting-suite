@@ -1,0 +1,107 @@
+{
+  "name": "DeliveryTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre descriptivo del template (ej: 'Informe Ejecutivo Kickoff')"
+    },
+    "delivery_type": {
+      "type": "string",
+      "enum": [
+        "informe",
+        "propuesta",
+        "caso_estudio",
+        "acta",
+        "summary"
+      ],
+      "description": "Tipo de entrega que genera este template"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n completa del template y su caso de uso"
+    },
+    "prompt_template_id": {
+      "type": "string",
+      "description": "Referencia a PromptTemplate"
+    },
+    "sections": {
+      "type": "array",
+      "description": "Secciones que componen la entrega",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "prompt_hint": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number"
+          },
+          "required": {
+            "type": "boolean",
+            "default": true
+          },
+          "min_words": {
+            "type": "number",
+            "default": 50
+          }
+        }
+      }
+    },
+    "tone": {
+      "type": "string",
+      "enum": [
+        "formal",
+        "ejecutivo",
+        "tecnico",
+        "operativo"
+      ],
+      "default": "ejecutivo",
+      "description": "Tono del documento generado"
+    },
+    "output_format": {
+      "type": "string",
+      "enum": [
+        "markdown",
+        "html",
+        "pdf"
+      ],
+      "default": "markdown"
+    },
+    "include_cover": {
+      "type": "boolean",
+      "default": true
+    },
+    "include_toc": {
+      "type": "boolean",
+      "default": false
+    },
+    "include_qa_summary": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "usage_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "delivery_type",
+    "sections"
+  ]
+}

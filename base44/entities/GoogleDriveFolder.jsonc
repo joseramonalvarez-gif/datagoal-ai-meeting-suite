@@ -1,0 +1,59 @@
+{
+  "name": "GoogleDriveFolder",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "client",
+        "project",
+        "subproject"
+      ],
+      "description": "Tipo de entidad vinculada"
+    },
+    "entity_id": {
+      "type": "string",
+      "description": "ID de Cliente/Proyecto/Subproyecto"
+    },
+    "folder_name": {
+      "type": "string",
+      "description": "Nombre de la carpeta en Drive"
+    },
+    "drive_folder_id": {
+      "type": "string",
+      "description": "ID \u00fanico de la carpeta en Google Drive"
+    },
+    "parent_folder_id": {
+      "type": "string",
+      "description": "ID del parent folder en Drive (para hierarqu\u00eda)"
+    },
+    "path": {
+      "type": "string",
+      "description": "Ruta completa en Drive (ej: /DataGoal/Clientes/ACME)"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sync_status": {
+      "type": "string",
+      "enum": [
+        "synced",
+        "pending",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Estado de sincronizaci\u00f3n con Drive"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Si falla, el error"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "drive_folder_id",
+    "path"
+  ]
+}

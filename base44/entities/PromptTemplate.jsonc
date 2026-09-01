@@ -1,0 +1,102 @@
+{
+  "name": "PromptTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre descriptivo (ej: 'Informe Kickoff v3')"
+    },
+    "prompt_type": {
+      "type": "string",
+      "enum": [
+        "report_generation",
+        "task_extraction",
+        "email_generation",
+        "summary",
+        "qa_check",
+        "semantic_search"
+      ],
+      "description": "Tipo de caso de uso"
+    },
+    "content": {
+      "type": "string",
+      "description": "El prompt completo (con placeholders {{variable}})"
+    },
+    "system_message": {
+      "type": "string",
+      "description": "System prompt para LLM"
+    },
+    "model": {
+      "type": "string",
+      "enum": [
+        "gpt-4-turbo",
+        "gpt-3.5-turbo",
+        "gemini-pro"
+      ],
+      "default": "gpt-4-turbo",
+      "description": "Modelo LLM a usar"
+    },
+    "temperature": {
+      "type": "number",
+      "description": "Temperatura 0-1 (0=determinista, 1=creativo)"
+    },
+    "max_tokens": {
+      "type": "number",
+      "description": "M\u00e1ximo de tokens a generar"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Versi\u00f3n del prompt"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "archived"
+      ],
+      "default": "active",
+      "description": "Estado del prompt"
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u00bfPrompt por defecto de su tipo?"
+    },
+    "test_cases": {
+      "type": "array",
+      "description": "Casos de test para validaci\u00f3n",
+      "items": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "string"
+          },
+          "expected_output_pattern": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "quality_score": {
+      "type": "number",
+      "description": "Score 0-1 (resultado A/B testing)"
+    },
+    "usage_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Veces utilizado"
+    },
+    "created_by": {
+      "type": "string",
+      "description": "Email del creador"
+    }
+  },
+  "required": [
+    "name",
+    "prompt_type",
+    "content",
+    "system_message"
+  ]
+}

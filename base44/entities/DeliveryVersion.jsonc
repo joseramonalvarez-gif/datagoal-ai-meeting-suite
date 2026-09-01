@@ -1,0 +1,73 @@
+{
+  "name": "DeliveryVersion",
+  "type": "object",
+  "properties": {
+    "delivery_run_id": {
+      "type": "string",
+      "description": "DeliveryRun al que pertenece"
+    },
+    "meeting_id": {
+      "type": "string",
+      "description": "Reuni\u00f3n fuente"
+    },
+    "version_number": {
+      "type": "number",
+      "default": 1,
+      "description": "N\u00famero de versi\u00f3n (1, 2, 3...)"
+    },
+    "content_markdown": {
+      "type": "string",
+      "description": "Contenido del informe en markdown"
+    },
+    "quality_score": {
+      "type": "number",
+      "description": "Score de calidad 0-100"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "approved",
+        "sent",
+        "rejected"
+      ],
+      "default": "draft"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Email del aprobador"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "drive_file_id": {
+      "type": "string",
+      "description": "ID del archivo en Google Drive"
+    },
+    "drive_file_url": {
+      "type": "string",
+      "description": "URL de visualizaci\u00f3n en Drive"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sent_to": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Emails a los que se envi\u00f3"
+    },
+    "change_notes": {
+      "type": "string",
+      "description": "Notas de qu\u00e9 cambi\u00f3 respecto a versi\u00f3n anterior"
+    }
+  },
+  "required": [
+    "delivery_run_id",
+    "version_number",
+    "content_markdown"
+  ]
+}

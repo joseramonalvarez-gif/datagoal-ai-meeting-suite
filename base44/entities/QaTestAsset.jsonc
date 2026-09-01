@@ -1,0 +1,38 @@
+{
+  "name": "QaTestAsset",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "asset_type": {
+      "type": "string",
+      "enum": [
+        "AUDIO_SHORT",
+        "AUDIO_LONG",
+        "TRANSCRIPT_WITH_TIMECODES",
+        "TRANSCRIPT_PLAIN"
+      ]
+    },
+    "file_url": {
+      "type": "string"
+    },
+    "mime_type": {
+      "type": "string"
+    },
+    "size_bytes": {
+      "type": "number"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "asset_type"
+  ]
+}

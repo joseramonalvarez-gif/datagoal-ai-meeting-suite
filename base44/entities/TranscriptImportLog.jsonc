@@ -1,0 +1,78 @@
+{
+  "name": "TranscriptImportLog",
+  "type": "object",
+  "properties": {
+    "source": {
+      "type": "string",
+      "enum": [
+        "google_meet",
+        "manual_upload",
+        "external_api"
+      ],
+      "description": "De d\u00f3nde vino la transcripci\u00f3n"
+    },
+    "source_file_url": {
+      "type": "string",
+      "description": "URL del archivo original (Drive link o upload)"
+    },
+    "meeting_id": {
+      "type": "string",
+      "description": "Meeting vinculado (si existe)"
+    },
+    "transcript_id": {
+      "type": "string",
+      "description": "Transcript creado/actualizado"
+    },
+    "import_status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "partial",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "parsed_speakers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Hablantes identificados"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "description": "Duraci\u00f3n del audio"
+    },
+    "has_timestamps": {
+      "type": "boolean",
+      "default": false
+    },
+    "has_diarization": {
+      "type": "boolean",
+      "default": false
+    },
+    "file_format": {
+      "type": "string",
+      "enum": [
+        "docx",
+        "md",
+        "txt",
+        "audio_wav",
+        "audio_mp3"
+      ],
+      "description": "Formato del archivo cargado"
+    },
+    "error_log": {
+      "type": "string"
+    },
+    "imported_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "source",
+    "import_status",
+    "imported_at"
+  ]
+}

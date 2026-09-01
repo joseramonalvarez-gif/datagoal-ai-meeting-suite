@@ -1,0 +1,133 @@
+{
+  "name": "DeliveryRun",
+  "type": "object",
+  "properties": {
+    "delivery_template_id": {
+      "type": "string",
+      "description": "Referencia al DeliveryTemplate utilizado"
+    },
+    "trigger_entity_type": {
+      "type": "string",
+      "enum": [
+        "Meeting",
+        "Proposal",
+        "Training",
+        "Manual"
+      ],
+      "description": "Qu\u00e9 entidad dispar\u00f3 esta entrega"
+    },
+    "trigger_entity_id": {
+      "type": "string",
+      "description": "ID de la entidad que dispar\u00f3"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "success",
+        "failed",
+        "review_pending",
+        "delivered"
+      ],
+      "default": "running",
+      "description": "Estado actual de la ejecuci\u00f3n"
+    },
+    "steps_executed": {
+      "type": "array",
+      "description": "Hist\u00f3rico de pasos ejecutados",
+      "items": {
+        "type": "object",
+        "properties": {
+          "step_name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "success",
+              "failed"
+            ]
+          },
+          "output": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "output_content": {
+      "type": "string",
+      "description": "Contenido generado (markdown/html)"
+    },
+    "output_file_url": {
+      "type": "string",
+      "description": "URL del PDF/documento en Drive"
+    },
+    "quality_score": {
+      "type": "number",
+      "description": "Score 0-1 de calidad (basado en QA checks)"
+    },
+    "delivery_checkpoints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs de DeliveryCheckpoint ejecutados"
+    },
+    "recipients": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Emails de destinatarios"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Cu\u00e1ndo se envi\u00f3"
+    },
+    "sent_by": {
+      "type": "string",
+      "description": "Email del consultor que envi\u00f3"
+    },
+    "total_time_ms": {
+      "type": "number",
+      "description": "Tiempo total de ejecuci\u00f3n en milisegundos"
+    },
+    "error_log": {
+      "type": "string",
+      "description": "Detalle de errores si ocurrieron"
+    },
+    "ai_metadata": {
+      "type": "object",
+      "description": "Metadatos de ejecuci\u00f3n LLM",
+      "properties": {
+        "model_used": {
+          "type": "string"
+        },
+        "prompt_version": {
+          "type": "string"
+        },
+        "temperature": {
+          "type": "number"
+        },
+        "tokens_used": {
+          "type": "number"
+        }
+      }
+    }
+  },
+  "required": [
+    "delivery_template_id",
+    "trigger_entity_type",
+    "trigger_entity_id"
+  ]
+}

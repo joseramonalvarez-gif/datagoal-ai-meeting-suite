@@ -1,0 +1,160 @@
+{
+  "name": "PermissionMatrix",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string",
+      "description": "Email del usuario"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "consultor",
+        "lider_proyecto",
+        "colaborador",
+        "cliente",
+        "gerencia",
+        "director_area",
+        "staff"
+      ],
+      "description": "Rol del usuario"
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Permisos granulares por m\u00f3dulo",
+      "properties": {
+        "meetings": {
+          "type": "object",
+          "properties": {
+            "create": {
+              "type": "boolean"
+            },
+            "edit": {
+              "type": "boolean"
+            },
+            "delete": {
+              "type": "boolean"
+            },
+            "view_all": {
+              "type": "boolean"
+            }
+          }
+        },
+        "tasks": {
+          "type": "object",
+          "properties": {
+            "create": {
+              "type": "boolean"
+            },
+            "edit": {
+              "type": "boolean"
+            },
+            "assign": {
+              "type": "boolean"
+            },
+            "delete": {
+              "type": "boolean"
+            },
+            "view_all": {
+              "type": "boolean"
+            }
+          }
+        },
+        "queries": {
+          "type": "object",
+          "properties": {
+            "create": {
+              "type": "boolean"
+            },
+            "edit": {
+              "type": "boolean"
+            },
+            "delete": {
+              "type": "boolean"
+            },
+            "execute": {
+              "type": "boolean"
+            },
+            "share": {
+              "type": "boolean"
+            },
+            "view_all": {
+              "type": "boolean"
+            }
+          }
+        },
+        "reports": {
+          "type": "object",
+          "properties": {
+            "create": {
+              "type": "boolean"
+            },
+            "edit": {
+              "type": "boolean"
+            },
+            "delete": {
+              "type": "boolean"
+            },
+            "approve": {
+              "type": "boolean"
+            },
+            "send": {
+              "type": "boolean"
+            },
+            "view_all": {
+              "type": "boolean"
+            }
+          }
+        },
+        "analytics": {
+          "type": "object",
+          "properties": {
+            "view": {
+              "type": "boolean"
+            },
+            "export": {
+              "type": "boolean"
+            }
+          }
+        },
+        "admin": {
+          "type": "object",
+          "properties": {
+            "manage_users": {
+              "type": "boolean"
+            },
+            "manage_permissions": {
+              "type": "boolean"
+            },
+            "view_audit": {
+              "type": "boolean"
+            },
+            "manage_settings": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "client_id": {
+      "type": "string",
+      "description": "Cliente espec\u00edfico (null = todos)"
+    },
+    "project_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Proyectos espec\u00edficos (empty = todos)"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "user_email",
+    "role"
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "name": "ApprovalRequest",
+  "type": "object",
+  "properties": {
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "minutes",
+        "task",
+        "report"
+      ]
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "meeting_id": {
+      "type": "string"
+    },
+    "client_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "submitted_by": {
+      "type": "string"
+    },
+    "approvers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Emails of required approvers"
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "user_email": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "rejected",
+              "pending"
+            ]
+          },
+          "comment": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "content_snapshot": {
+      "type": "string",
+      "description": "Snapshot of the content being approved"
+    }
+  },
+  "required": [
+    "entity_type",
+    "entity_id",
+    "meeting_id",
+    "title",
+    "submitted_by"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "name": "Milestone",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "target_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed"
+      ],
+      "default": "pending"
+    },
+    "linked_tasks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "linked_documents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "client_id",
+    "project_id",
+    "title"
+  ]
+}

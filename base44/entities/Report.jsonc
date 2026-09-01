@@ -1,0 +1,125 @@
+{
+  "name": "Report",
+  "type": "object",
+  "properties": {
+    "meeting_id": {
+      "type": "string"
+    },
+    "client_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "transcript_id": {
+      "type": "string"
+    },
+    "template_id": {
+      "type": "string",
+      "description": "ReportTemplate used to generate this report"
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "title": {
+      "type": "string"
+    },
+    "content_markdown": {
+      "type": "string",
+      "description": "Report content in Markdown"
+    },
+    "content_html": {
+      "type": "string",
+      "description": "Report content in HTML"
+    },
+    "pdf_url": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "generated",
+        "pending_approval",
+        "approved",
+        "rejected"
+      ],
+      "default": "draft"
+    },
+    "linked_tasks": {
+      "type": "array",
+      "description": "Task IDs bidirectionally linked to this report",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ai_metadata": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "prompt_version": {
+          "type": "string"
+        },
+        "generated_at": {
+          "type": "string"
+        },
+        "generated_by": {
+          "type": "string"
+        },
+        "template_name": {
+          "type": "string"
+        }
+      }
+    },
+    "approval_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "user_email": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "comment": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "email_send_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sent_by": {
+            "type": "string"
+          },
+          "sent_at": {
+            "type": "string"
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "report_version": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "meeting_id",
+    "client_id"
+  ]
+}

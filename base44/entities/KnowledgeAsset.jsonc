@@ -1,0 +1,98 @@
+{
+  "name": "KnowledgeAsset",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "T\u00edtulo del activo de conocimiento"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n detallada"
+    },
+    "asset_type": {
+      "type": "string",
+      "enum": [
+        "methodology",
+        "framework",
+        "template",
+        "case_study",
+        "best_practice",
+        "tool",
+        "checklist",
+        "proposal_template"
+      ],
+      "description": "Tipo de activo"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "digital_transformation",
+        "data_strategy",
+        "cloud_migration",
+        "ai_ml",
+        "customer_experience",
+        "operations",
+        "innovation",
+        "other"
+      ],
+      "description": "Categor\u00eda tem\u00e1tica"
+    },
+    "content": {
+      "type": "string",
+      "description": "Contenido principal del activo"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL del archivo asociado (PDF, Word, etc)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags para b\u00fasqueda"
+    },
+    "related_asset_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs de activos relacionados"
+    },
+    "version": {
+      "type": "number",
+      "default": 1,
+      "description": "Versi\u00f3n del activo"
+    },
+    "is_public": {
+      "type": "boolean",
+      "default": true,
+      "description": "Accesible a todos"
+    },
+    "embeddings_vector": {
+      "type": "string",
+      "description": "Vector de embeddings para b\u00fasqueda sem\u00e1ntica"
+    },
+    "usage_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Veces que fue consultado"
+    },
+    "last_accessed": {
+      "type": "string",
+      "format": "date-time",
+      "description": "\u00daltima vez que se accedi\u00f3"
+    },
+    "author_email": {
+      "type": "string",
+      "description": "Email del creador"
+    }
+  },
+  "required": [
+    "title",
+    "asset_type",
+    "category",
+    "content"
+  ]
+}

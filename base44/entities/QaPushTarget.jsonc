@@ -1,0 +1,22 @@
+{
+  "name": "QaPushTarget",
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "push_token": {
+      "type": "string"
+    },
+    "device_label": {
+      "type": "string"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "user_email"
+  ]
+}

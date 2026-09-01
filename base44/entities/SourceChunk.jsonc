@@ -1,0 +1,60 @@
+{
+  "name": "SourceChunk",
+  "type": "object",
+  "properties": {
+    "knowledge_asset_id": {
+      "type": "string",
+      "description": "Referencia al KnowledgeAsset padre"
+    },
+    "chunk_index": {
+      "type": "number",
+      "description": "\u00cdndice del chunk en el documento"
+    },
+    "text": {
+      "type": "string",
+      "description": "Contenido del chunk (max 500 chars)"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "document",
+        "transcript",
+        "report",
+        "proposal"
+      ],
+      "description": "De d\u00f3nde vino el chunk"
+    },
+    "source_id": {
+      "type": "string",
+      "description": "ID del documento/reporte/propuesta original"
+    },
+    "embeddings_vector": {
+      "type": "string",
+      "description": "Vector de embeddings para b\u00fasqueda sem\u00e1ntica"
+    },
+    "relevance_score": {
+      "type": "number",
+      "description": "Score de relevancia (0-1)"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "number"
+        },
+        "section_title": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "description": "Metadatos adicionales"
+    }
+  },
+  "required": [
+    "knowledge_asset_id",
+    "text",
+    "source_type"
+  ]
+}

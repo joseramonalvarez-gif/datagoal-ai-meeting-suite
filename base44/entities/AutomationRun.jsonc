@@ -1,0 +1,95 @@
+{
+  "name": "AutomationRun",
+  "type": "object",
+  "properties": {
+    "meeting_id": {
+      "type": "string",
+      "description": "Reuni\u00f3n que dispar\u00f3 la automatizaci\u00f3n"
+    },
+    "automation_type": {
+      "type": "string",
+      "enum": [
+        "post_meeting",
+        "normalize_transcript",
+        "pmo_monitor",
+        "manual"
+      ],
+      "description": "Tipo de automatizaci\u00f3n ejecutada"
+    },
+    "trigger_event": {
+      "type": "string",
+      "description": "Evento que dispar\u00f3 la automatizaci\u00f3n"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "running",
+        "success",
+        "partial",
+        "failed"
+      ],
+      "default": "running",
+      "description": "Estado actual"
+    },
+    "steps": {
+      "type": "array",
+      "description": "Pasos ejecutados en orden",
+      "items": {
+        "type": "object",
+        "properties": {
+          "step_name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "success",
+              "failed",
+              "skipped"
+            ]
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "output_summary": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "duration_ms": {
+      "type": "number",
+      "description": "Tiempo total en milisegundos"
+    },
+    "triggered_by": {
+      "type": "string",
+      "description": "Email del usuario o 'system'"
+    },
+    "delivery_run_id": {
+      "type": "string",
+      "description": "DeliveryRun generado por esta automatizaci\u00f3n"
+    },
+    "error_log": {
+      "type": "string",
+      "description": "Detalle del error si fall\u00f3"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Resumen legible de lo que ocurri\u00f3"
+    }
+  },
+  "required": [
+    "automation_type",
+    "status"
+  ]
+}

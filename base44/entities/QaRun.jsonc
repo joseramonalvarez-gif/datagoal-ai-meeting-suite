@@ -1,0 +1,65 @@
+{
+  "name": "QaRun",
+  "type": "object",
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "run_type": {
+      "type": "string",
+      "enum": [
+        "SMOKE",
+        "FULL",
+        "EMAIL_ONLY",
+        "NOTIF_ONLY",
+        "TRANSCRIPTION_ONLY",
+        "FILES_ONLY"
+      ]
+    },
+    "environment": {
+      "type": "string"
+    },
+    "tenant_scope": {
+      "type": "string"
+    },
+    "project_scope": {
+      "type": "string"
+    },
+    "started_by": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "finished_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "RUNNING",
+        "SUCCESS",
+        "FAILED",
+        "PARTIAL"
+      ],
+      "default": "RUNNING"
+    },
+    "summary_passed": {
+      "type": "number",
+      "default": 0
+    },
+    "summary_failed": {
+      "type": "number",
+      "default": 0
+    },
+    "summary_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "run_type"
+  ]
+}

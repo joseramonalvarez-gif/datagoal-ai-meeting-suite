@@ -1,0 +1,60 @@
+{
+  "name": "Client",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Client/tenant name"
+    },
+    "logo_url": {
+      "type": "string",
+      "description": "Client logo URL"
+    },
+    "industry": {
+      "type": "string",
+      "description": "Industry sector"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Primary contact email"
+    },
+    "contact_phone": {
+      "type": "string",
+      "description": "Primary contact phone"
+    },
+    "address": {
+      "type": "string",
+      "description": "Client address"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "archived"
+      ],
+      "default": "active"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes"
+    },
+    "project_leads": {
+      "type": "array",
+      "description": "Email list of project leads for this client",
+      "items": {
+        "type": "string"
+      }
+    },
+    "management_contacts": {
+      "type": "array",
+      "description": "Email list of management/gerencias",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

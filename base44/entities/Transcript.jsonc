@@ -1,0 +1,94 @@
+{
+  "name": "Transcript",
+  "type": "object",
+  "properties": {
+    "meeting_id": {
+      "type": "string"
+    },
+    "client_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "processing",
+        "completed",
+        "error",
+        "no_timeline"
+      ],
+      "default": "processing"
+    },
+    "has_timeline": {
+      "type": "boolean",
+      "default": false
+    },
+    "has_diarization": {
+      "type": "boolean",
+      "default": false
+    },
+    "segments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "start_time": {
+            "type": "string"
+          },
+          "end_time": {
+            "type": "string"
+          },
+          "speaker_id": {
+            "type": "string"
+          },
+          "speaker_label": {
+            "type": "string"
+          },
+          "text_literal": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "full_text": {
+      "type": "string",
+      "description": "Full transcript as plain text"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "audio_transcription",
+        "meet_import",
+        "manual_upload",
+        "ai_enriched"
+      ]
+    },
+    "ai_metadata": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "prompt_version": {
+          "type": "string"
+        },
+        "generated_at": {
+          "type": "string"
+        },
+        "generated_by": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "meeting_id",
+    "client_id"
+  ]
+}

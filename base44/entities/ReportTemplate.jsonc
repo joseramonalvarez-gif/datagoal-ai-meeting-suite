@@ -1,0 +1,81 @@
+{
+  "name": "ReportTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre de la plantilla"
+    },
+    "meeting_type": {
+      "type": "string",
+      "enum": [
+        "general",
+        "kickoff",
+        "seguimiento",
+        "retrospectiva",
+        "revision_tecnica",
+        "comite_direccion"
+      ],
+      "default": "general"
+    },
+    "description": {
+      "type": "string"
+    },
+    "sections": {
+      "type": "array",
+      "description": "Secciones configurables del informe",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "prompt_hint": {
+            "type": "string",
+            "description": "Instrucci\u00f3n para la IA sobre qu\u00e9 incluir en esta secci\u00f3n"
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true
+          },
+          "order": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "tone": {
+      "type": "string",
+      "enum": [
+        "formal",
+        "ejecutivo",
+        "tecnico",
+        "operativo"
+      ],
+      "default": "ejecutivo"
+    },
+    "include_task_summary": {
+      "type": "boolean",
+      "default": true
+    },
+    "include_approval_section": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_default": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "meeting_type"
+  ]
+}

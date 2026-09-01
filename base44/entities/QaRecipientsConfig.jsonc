@@ -1,0 +1,26 @@
+{
+  "name": "QaRecipientsConfig",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "participant_emails": {
+      "type": "string",
+      "description": "Comma-separated emails"
+    },
+    "project_lead_emails": {
+      "type": "string"
+    },
+    "management_emails": {
+      "type": "string"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

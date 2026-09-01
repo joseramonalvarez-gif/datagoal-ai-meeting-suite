@@ -1,0 +1,69 @@
+{
+  "name": "Project",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "Reference to Client"
+    },
+    "name": {
+      "type": "string",
+      "description": "Project name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Project description"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "on_hold",
+        "completed",
+        "archived"
+      ],
+      "default": "active"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "progress": {
+      "type": "number",
+      "default": 0,
+      "description": "Progress percentage 0-100"
+    },
+    "leads": {
+      "type": "array",
+      "description": "Emails of project leads",
+      "items": {
+        "type": "string"
+      }
+    },
+    "members": {
+      "type": "array",
+      "description": "Emails of project members",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "area": {
+      "type": "string",
+      "description": "Project area/subproject"
+    }
+  },
+  "required": [
+    "client_id",
+    "name"
+  ]
+}

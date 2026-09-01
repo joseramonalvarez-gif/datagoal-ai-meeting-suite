@@ -1,0 +1,37 @@
+{
+  "name": "EmailTemplate",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre de la plantilla"
+    },
+    "description": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Asunto del email (puede contener variables {{variable}})"
+    },
+    "body_html": {
+      "type": "string",
+      "description": "Cuerpo HTML del email con variables"
+    },
+    "variables": {
+      "type": "array",
+      "description": "Variables disponibles en esta plantilla",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "subject",
+    "body_html"
+  ]
+}

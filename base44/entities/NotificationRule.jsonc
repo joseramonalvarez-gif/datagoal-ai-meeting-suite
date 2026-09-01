@@ -1,0 +1,87 @@
+{
+  "name": "NotificationRule",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre de la regla"
+    },
+    "description": {
+      "type": "string"
+    },
+    "event_source": {
+      "type": "string",
+      "enum": [
+        "qa_center",
+        "meetings"
+      ],
+      "description": "Origen del evento"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "qa_run_failed",
+        "qa_run_completed",
+        "qa_run_partial",
+        "qa_check_failed",
+        "meeting_transcribed",
+        "meeting_report_generated",
+        "meeting_scheduled"
+      ]
+    },
+    "conditions": {
+      "type": "object",
+      "description": "Condiciones adicionales (ej. min_failures para qa)",
+      "properties": {
+        "min_failures": {
+          "type": "number"
+        },
+        "check_codes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "template_id": {
+      "type": "string",
+      "description": "ID de EmailTemplate asociada"
+    },
+    "recipients_type": {
+      "type": "string",
+      "enum": [
+        "fixed_list",
+        "participants",
+        "project_leads",
+        "management",
+        "all"
+      ],
+      "default": "fixed_list"
+    },
+    "recipients_emails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Emails fijos si recipients_type es fixed_list"
+    },
+    "send_email": {
+      "type": "boolean",
+      "default": true
+    },
+    "send_in_app": {
+      "type": "boolean",
+      "default": true
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "event_source",
+    "event_type"
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "name": "Document",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "folder": {
+      "type": "string",
+      "description": "Folder path, e.g. 'informes' or 'informes/mensuales'"
+    },
+    "file_url": {
+      "type": "string"
+    },
+    "file_type": {
+      "type": "string"
+    },
+    "parent_document_id": {
+      "type": "string",
+      "description": "ID of the original document this is a version of"
+    },
+    "version": {
+      "type": "number",
+      "default": 1
+    },
+    "is_latest": {
+      "type": "boolean",
+      "default": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_approval",
+        "approved",
+        "rejected",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "comments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "author_email": {
+            "type": "string"
+          },
+          "author_name": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "comment",
+              "approval",
+              "rejection"
+            ]
+          }
+        }
+      }
+    },
+    "linked_meeting_id": {
+      "type": "string"
+    },
+    "linked_report_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "client_id",
+    "name"
+  ]
+}

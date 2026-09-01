@@ -1,0 +1,87 @@
+{
+  "name": "DeliveryCheckpoint",
+  "type": "object",
+  "properties": {
+    "delivery_run_id": {
+      "type": "string",
+      "description": "Referencia a DeliveryRun"
+    },
+    "checkpoint_type": {
+      "type": "string",
+      "enum": [
+        "spell_check",
+        "format_validation",
+        "completeness",
+        "logic",
+        "compliance"
+      ],
+      "description": "Tipo de validaci\u00f3n ejecutada"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed",
+        "review_required"
+      ],
+      "description": "Resultado del checkpoint"
+    },
+    "issues": {
+      "type": "array",
+      "description": "Lista de problemas encontrados",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "suggestion": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "score": {
+      "type": "number",
+      "description": "Score 0-1 del checkpoint"
+    },
+    "checked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "checked_by": {
+      "type": "string",
+      "description": "'system' o email del usuario"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Email si requiri\u00f3 aprobaci\u00f3n manual"
+    },
+    "approval_notes": {
+      "type": "string",
+      "description": "Notas de aprobaci\u00f3n/rechazo"
+    },
+    "force_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u00bfSe envi\u00f3 a pesar de issues?"
+    }
+  },
+  "required": [
+    "delivery_run_id",
+    "checkpoint_type",
+    "status"
+  ]
+}

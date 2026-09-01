@@ -1,0 +1,22 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "consultor",
+        "lider_proyecto",
+        "colaborador",
+        "cliente",
+        "gerencia",
+        "director_area",
+        "staff"
+      ],
+      "default": "staff",
+      "description": "Rol del usuario en el sistema"
+    }
+  },
+  "required": []
+}

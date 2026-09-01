@@ -1,0 +1,48 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string",
+      "description": "Channel name or area"
+    },
+    "content": {
+      "type": "string"
+    },
+    "author_email": {
+      "type": "string"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "mentions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "linked_task_id": {
+      "type": "string"
+    },
+    "linked_document_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "client_id",
+    "project_id",
+    "content"
+  ]
+}

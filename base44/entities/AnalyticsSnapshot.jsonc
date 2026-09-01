@@ -1,0 +1,121 @@
+{
+  "name": "AnalyticsSnapshot",
+  "type": "object",
+  "properties": {
+    "snapshot_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha del snapshot (diario)"
+    },
+    "period_type": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ],
+      "default": "daily"
+    },
+    "client_id": {
+      "type": "string",
+      "description": "Cliente al que pertenece"
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Proyecto (opcional)"
+    },
+    "metrics": {
+      "type": "object",
+      "description": "M\u00e9tricas agregadas",
+      "properties": {
+        "total_meetings": {
+          "type": "number"
+        },
+        "total_tasks": {
+          "type": "number"
+        },
+        "tasks_closed": {
+          "type": "number"
+        },
+        "tasks_ontime": {
+          "type": "number"
+        },
+        "total_hours": {
+          "type": "number"
+        },
+        "billable_hours": {
+          "type": "number"
+        },
+        "avg_delivery_quality": {
+          "type": "number",
+          "description": "0-1 score"
+        },
+        "avg_delivery_time_ms": {
+          "type": "number"
+        },
+        "deliveries_completed": {
+          "type": "number"
+        },
+        "deliveries_failed": {
+          "type": "number"
+        }
+      }
+    },
+    "kpis": {
+      "type": "object",
+      "description": "KPIs calculados",
+      "properties": {
+        "task_completion_rate": {
+          "type": "number",
+          "description": "% tareas cerradas"
+        },
+        "ontime_delivery_rate": {
+          "type": "number",
+          "description": "% entregas en plazo"
+        },
+        "billable_ratio": {
+          "type": "number",
+          "description": "Horas facturables / total"
+        },
+        "quality_score": {
+          "type": "number",
+          "description": "Score de calidad promedio"
+        },
+        "lead_time_days": {
+          "type": "number",
+          "description": "D\u00edas reuni\u00f3n a entregable"
+        }
+      }
+    },
+    "trends": {
+      "type": "array",
+      "description": "Comparaci\u00f3n con per\u00edodo anterior",
+      "items": {
+        "type": "object",
+        "properties": {
+          "metric": {
+            "type": "string"
+          },
+          "current": {
+            "type": "number"
+          },
+          "previous": {
+            "type": "number"
+          },
+          "change_percent": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "snapshot_date",
+    "client_id",
+    "metrics"
+  ]
+}

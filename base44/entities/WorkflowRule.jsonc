@@ -1,0 +1,80 @@
+{
+  "name": "WorkflowRule",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "trigger_type": {
+      "type": "string",
+      "enum": [
+        "keyword_match",
+        "status_change",
+        "always"
+      ],
+      "default": "keyword_match"
+    },
+    "keywords": {
+      "type": "array",
+      "description": "Keywords to match in transcript/minutes",
+      "items": {
+        "type": "string"
+      }
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "create_task",
+        "send_email",
+        "create_followup_meeting"
+      ],
+      "default": "create_task"
+    },
+    "task_template": {
+      "type": "object",
+      "properties": {
+        "title_template": {
+          "type": "string"
+        },
+        "description_template": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "urgent"
+          ],
+          "default": "medium"
+        },
+        "due_days_offset": {
+          "type": "number",
+          "default": 7
+        },
+        "assignee_strategy": {
+          "type": "string",
+          "enum": [
+            "meeting_organizer",
+            "first_participant",
+            "none"
+          ],
+          "default": "none"
+        }
+      }
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "trigger_type",
+    "action_type"
+  ]
+}

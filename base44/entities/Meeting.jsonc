@@ -1,0 +1,99 @@
+{
+  "name": "Meeting",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "objective": {
+      "type": "string"
+    },
+    "organizer_email": {
+      "type": "string"
+    },
+    "participants": {
+      "type": "array",
+      "description": "List of participant objects",
+      "items": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "audio_url": {
+      "type": "string"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "audio_upload",
+        "google_meet",
+        "transcript_upload"
+      ],
+      "description": "How the meeting content was provided"
+    },
+    "google_meet_file_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "recorded",
+        "transcribed",
+        "report_generated",
+        "approved",
+        "closed"
+      ],
+      "default": "scheduled"
+    },
+    "speaker_mapping": {
+      "type": "array",
+      "description": "Mapping of speaker IDs to real users",
+      "items": {
+        "type": "object",
+        "properties": {
+          "speaker_id": {
+            "type": "string"
+          },
+          "speaker_label": {
+            "type": "string"
+          },
+          "user_email": {
+            "type": "string"
+          },
+          "user_name": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "client_id",
+    "project_id",
+    "title"
+  ]
+}

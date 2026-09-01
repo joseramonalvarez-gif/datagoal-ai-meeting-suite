@@ -1,0 +1,104 @@
+{
+  "name": "AlertRule",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre de la regla de alerta"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n de qu\u00e9 dispara esta alerta"
+    },
+    "alert_type": {
+      "type": "string",
+      "enum": [
+        "automation_failed",
+        "task_overdue",
+        "meeting_no_followup",
+        "client_risk",
+        "proposal_pending",
+        "high_priority_task_stuck",
+        "custom"
+      ],
+      "description": "Tipo de alerta"
+    },
+    "trigger_condition": {
+      "type": "object",
+      "description": "Condici\u00f3n que dispara la alerta",
+      "properties": {
+        "metric": {
+          "type": "string",
+          "description": "M\u00e9trica a monitorear"
+        },
+        "operator": {
+          "type": "string",
+          "enum": [
+            "equals",
+            "greater_than",
+            "less_than",
+            "contains"
+          ]
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "recipient_emails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Emails a alertar"
+    },
+    "notify_via": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "email",
+          "in_app",
+          "whatsapp"
+        ]
+      },
+      "default": [
+        "in_app"
+      ],
+      "description": "Canales de notificaci\u00f3n"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "check_interval_minutes": {
+      "type": "number",
+      "default": 5,
+      "description": "Cada cu\u00e1ntos minutos se chequea"
+    },
+    "last_triggered": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trigger_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Veces que fue disparada"
+    }
+  },
+  "required": [
+    "name",
+    "alert_type",
+    "trigger_condition"
+  ]
+}

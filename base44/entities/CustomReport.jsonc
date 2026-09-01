@@ -1,0 +1,146 @@
+{
+  "name": "CustomReport",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del reporte personalizado"
+    },
+    "description": {
+      "type": "string",
+      "description": "Descripci\u00f3n del reporte"
+    },
+    "query_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "IDs de SavedQuery que componen el reporte"
+    },
+    "entity_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity_name": {
+            "type": "string"
+          },
+          "filters": {
+            "type": "object"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "description": "Datos de entidades a incluir"
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "query_id": {
+            "type": "string"
+          },
+          "chart_type": {
+            "type": "string",
+            "enum": [
+              "table",
+              "bar",
+              "line",
+              "pie"
+            ]
+          },
+          "order": {
+            "type": "number"
+          }
+        }
+      },
+      "description": "Secciones del reporte"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "is_scheduled": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u00bfSe genera autom\u00e1ticamente?"
+    },
+    "schedule_frequency": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ],
+      "default": "weekly"
+    },
+    "schedule_time": {
+      "type": "string",
+      "description": "Hora de generaci\u00f3n (HH:MM)"
+    },
+    "recipients": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Emails para env\u00edo autom\u00e1tico"
+    },
+    "last_generated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "author_email": {
+      "type": "string"
+    },
+    "permissions": {
+      "type": "object",
+      "description": "Permisos granulares",
+      "properties": {
+        "can_view": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Emails de usuarios/grupos con permiso de lectura"
+        },
+        "can_edit": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Emails de usuarios/grupos con permiso de edici\u00f3n"
+        },
+        "can_approve": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Emails de usuarios/grupos con permiso de aprobaci\u00f3n"
+        },
+        "is_private": {
+          "type": "boolean",
+          "default": true,
+          "description": "Solo visible al propietario"
+        }
+      }
+    }
+  },
+  "required": [
+    "name",
+    "query_ids"
+  ]
+}
