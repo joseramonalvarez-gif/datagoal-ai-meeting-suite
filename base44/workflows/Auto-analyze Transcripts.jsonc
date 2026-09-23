@@ -1,0 +1,43 @@
+{
+  "name": "Auto-analyze Transcripts",
+  "description": "Automatically analyze transcripts when they complete transcription",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "update"
+      ],
+      "entity_name": "Transcript"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_analyze_transcripts",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "analyzeMeetingTranscript",
+            "args": {
+              "transcript_id": "{{entity_id}}",
+              "meeting_id": "{{data.meeting_id}}",
+              "client_id": "{{data.client_id}}",
+              "project_id": "{{data.project_id}}",
+              "full_text": "{{data.full_text}}"
+            }
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "analyzeMeetingTranscript"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "Auto-create Project Drive Folder",
+  "description": "Crea autom\u00e1ticamente estructura de carpetas en Google Drive cuando se crea un proyecto",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "Project"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "auto_create_project_drive_folder",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "createProjectFolderStructure",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "createProjectFolderStructure"
+  }
+}

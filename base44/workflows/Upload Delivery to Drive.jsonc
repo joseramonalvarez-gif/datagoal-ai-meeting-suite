@@ -1,0 +1,37 @@
+{
+  "name": "Upload Delivery to Drive",
+  "description": "Automatically uploads deliveries to Drive Entregables folder",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "DeliveryRun"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "upload_delivery_to_drive",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "uploadDeliveryToDrive",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "uploadDeliveryToDrive"
+  }
+}

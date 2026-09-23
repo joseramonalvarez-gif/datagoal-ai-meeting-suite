@@ -1,0 +1,37 @@
+{
+  "name": "Post-Meeting Delivery (on transcribed)",
+  "description": "Cuando una reuni\u00f3n cambia a status=transcribed, genera informe, sube a Drive y env\u00eda email al PM autom\u00e1ticamente.",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "update"
+      ],
+      "entity_name": "Meeting"
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "post_meeting_delivery_on_transcribed",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_function": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "orchestrateMeetingDelivery",
+            "args": {}
+          },
+          "then": "end"
+        }
+      }
+    ]
+  },
+  "x-base44-migrated-from-automation": {
+    "legacy_payload_function": "orchestrateMeetingDelivery"
+  }
+}
